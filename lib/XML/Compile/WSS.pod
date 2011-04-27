@@ -1,0 +1,156 @@
+=head1 NAME
+
+XML::Compile::WSS - OASIS Web Services Security
+
+=head1 INHERITANCE
+
+ XML::Compile::WSS is extended by
+   XML::Compile::SOAP::WSS
+
+=head1 SYNOPSIS
+
+ my $schema = XML::Compile::Cache->new(...);
+ my $wss    = XML::Compile::WSS->new(version => '1.1'
+   , schema => $schema);
+ 
+ use XML::Compile::WSS::Util ':wss11'
+
+=head1 DESCRIPTION
+
+The Web Services Security working group of W3C develops a set of
+standards which add signatures and encryption to XML.
+
+In its current status, this module supports processing (reading and
+writing) of the XML meta-data involved, however there is no support for
+in-file encryption or signature checking (yet).
+
+The C<examples> directory included in the distribution of the module
+contains examples how to use it. There even is an extended example how
+to produce these structures (writing), but that is quite difficult where
+the standard uses "any" elements everywhere.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item XML::Compile::WSS-E<gt>B<new>(OPTIONS)
+
+ -Option --Default
+  schema   undef
+  version  <required>
+
+=over 2
+
+=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
+
+Add the WSS extension information to the provided schema.  If not used,
+you have to call L<loadSchemas()|XML::Compile::WSS/"Handling"> before compiling readers and writers.
+
+=item version => '1.1'|MODULE
+
+Explicitly state which version WSS needs to be produced.
+You may use a version number. You may also use the MODULE
+name, which is a namespace constant, provided via C<::Util>.
+The only option is currently C<WSS11MODULE>.
+
+=back
+
+=back
+
+=head2 Attributes
+
+=over 4
+
+=item $obj-E<gt>B<schema>
+
+=item $obj-E<gt>B<version>
+
+Returns the version number.
+
+=back
+
+=head2 Handling
+
+=over 4
+
+=item $obj-E<gt>B<loadSchemas>(SCHEMA)
+
+SCHEMA must extend L<XML::Compile::Cache|XML::Compile::Cache>.
+
+The SCHEMA settings will may changed a little. For one, the
+C<allow_undeclared> flag will be set. Also, C<any_element> will be set to
+'ATTEMPT' and C<mixed_elements> to 'STRUCTURAL'.
+
+=back
+
+=head2 SEE ALSO
+
+=over 4
+
+=item XML Signature Syntax and Processing (Second Edition)
+
+F<http://www.w3.org/TR/2008/REC-xmldsig-core-20080610/>, 10 June 2008
+
+=item XML Encryption Syntax and Processing
+
+F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>, 10 December 2002
+
+=item XML Security Generic Hybrid Ciphers
+
+F<http://www.w3.org/TR/2011/CR-xmlsec-generic-hybrid-20110303/>, 3 March 2011
+
+=item XML Signature Properties
+
+F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>, 3 March 2011
+
+=item XML Signature Syntax and Processing Version 1.1
+
+F<http://www.w3.org/TR/2011/CR-xmldsig-core1-20110303/>, 3 March 2011
+
+=item RFC4050 Using the ECDSA for XML Digital Signatures
+
+F<http://www.ietf.org/rfc/rfc4050.txt>, april 2005
+
+=item RFC4051 Additional XML Security Uniform Resource Identifiers (URIs)
+
+F<http://www.ietf.org/rfc/rfc4051.txt>, april 2005
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile-WSS distribution version 0.10,
+built on April 27, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+
+Other distributions in this suite:
+L<XML::Compile>,
+L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP12>,
+L<XML::Compile::SOAP::Daemon>,
+L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
+L<XML::Compile::Tester>,
+L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>,
+L<XML::Compile::RPC>,
+L<XML::Rewrite>,
+L<XML::eXistDB>,
+and
+L<XML::LibXML::Simple>.
+
+Please post questions or ideas to the mailinglist at
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
+For live contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
+
+=head1 LICENSE
+
+Copyrights 2011 by Mark Overmeer. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
