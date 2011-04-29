@@ -79,8 +79,8 @@ See L<XML::Compile::WSS/"Handling">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.10,
-built on April 27, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.11,
+built on April 29, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

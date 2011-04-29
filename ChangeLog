@@ -1,5 +1,8 @@
 
 ==== version history of XML::Compile:WSS
 
+version 0.11:
+	- add missing dependency to XML::Compile::SOAP [cpantesters]
+
 version 0.10: Wed Apr 27 17:07:40 CEST 2011
 	- initial release
