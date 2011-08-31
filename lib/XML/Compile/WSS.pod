@@ -46,7 +46,7 @@ the standard uses "any" elements everywhere.
 =item schema => L<XML::Compile::Cache|XML::Compile::Cache>
 
 Add the WSS extension information to the provided schema.  If not used,
-you have to call L<loadSchemas()|XML::Compile::WSS/"Handling"> before compiling readers and writers.
+you have to call L<loadSchemas()|XML::Compile::WSS/"Internals"> before compiling readers and writers.
 
 =item version => '1.1'|MODULE
 
@@ -71,7 +71,32 @@ Returns the version number.
 
 =back
 
-=head2 Handling
+=head2 Simplifications
+
+=over 4
+
+=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD)
+
+Many SOAP applications require a username/password authentication, like
+HTTP's basic authentication. See F<examples/usertoken/manually.pl> for
+an example how to construct this by hand for any possible requirement.
+
+This method, however, offers a simplification for the usual case. See
+a working example in F<examples/usertoken/with_help.pl>
+
+example: how to use wsseBasicAuth
+
+  my $call     = $wsdl->compileClient($operation);
+  my $security = $wss->wsseBasicAuth($username, $password);
+
+  my ($answer, $trace) = $call->
+    ( wsse_Security => $security
+    , %payload
+    );
+
+=back
+
+=head2 Internals
 
 =over 4
 
@@ -121,8 +146,8 @@ F<http://www.ietf.org/rfc/rfc4051.txt>, april 2005
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.11,
-built on April 29, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.12,
+built on August 31, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

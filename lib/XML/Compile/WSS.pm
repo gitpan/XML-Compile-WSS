@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 
 use Log::Report 'xml-compile-wss';
@@ -52,12 +52,28 @@ sub init($)
 
 #-----------
 
-
 sub version() {shift->{XCW_version}}
 sub schema()  {shift->{XCW_schema}}
 
 #-----------
 
+sub wsseBasicAuth($$)
+{   my ($self, $username, $password) = @_;
+
+    my $schema = $self->schema or panic;
+    my $pwtype = $schema->findName('wsse:Password');
+    my $untype = $schema->findName('wsse:UsernameToken');
+
+    my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
+    my $pwnode = $schema->writer($pwtype, include_namespaces => 0)
+        ->($doc, $password);
+    my $token  = $schema->writer($untype, include_namespaces => 0)
+        ->($doc, { wsse_Username => $username, $pwtype => $pwnode } );
+
+    +{ $untype => $token };
+}
+
+#-----------
 
 sub loadSchemas($)
 {   my ($self, $schema) = @_;

@@ -1,7 +1,12 @@
 
 ==== version history of XML::Compile:WSS
 
-version 0.11:
+version 0.12: Wed Aug 31 11:31:12 CEST 2011
+	- add XML::Compile::WSS::wsseBasicAuth() helper, which was
+	  needed by [Caleb Cushing]
+	- add examples in examples/usertoken/
+
+version 0.11: Fri Apr 29 11:29:16 CEST 2011
 	- add missing dependency to XML::Compile::SOAP [cpantesters]
 
 version 0.10: Wed Apr 27 17:07:40 CEST 2011

@@ -16,7 +16,9 @@ XML::Compile::SOAP::WSS - Web Service Security used in SOAP
  use XML::Compile::SOAP::WSDL11;  # first
  use XML::Compile::SOAP::WSS;     # hooks into wsdl
 
+ # you really need next line
  my $wss  = XML::Compile::SOAP::WSS->new(version => '1.1');
+
  my $wsdl = XML::Compile::WSDL11->new(...);
  my $call = $wsdl->compileClient('some_operation');
 
@@ -65,13 +67,23 @@ See L<XML::Compile::WSS/"Attributes">
 
 =back
 
-=head2 Handling
+=head2 Simplifications
+
+=over 4
+
+=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD)
+
+See L<XML::Compile::WSS/"Simplifications">
+
+=back
+
+=head2 Internals
 
 =over 4
 
 =item $obj-E<gt>B<loadSchemas>(SCHEMA)
 
-See L<XML::Compile::WSS/"Handling">
+See L<XML::Compile::WSS/"Internals">
 
 =back
 
@@ -79,8 +91,8 @@ See L<XML::Compile::WSS/"Handling">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.11,
-built on April 29, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.12,
+built on August 31, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

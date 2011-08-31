@@ -6,6 +6,8 @@ examples/dsp/sp-example.xml
 examples/enc/README
 examples/enc/enc-example.xml
 examples/enc/read_example.pl
+examples/usertoken/manually.pl
+examples/usertoken/with_help.pl
 examples/wsse/README
 examples/wsse/example.wsdl
 examples/wsse/read_example.pl
