@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               XML-Compile-WSS
-version:            0.12
+version:            0.13
 abstract:           OASIS Web Services Security
 author:
     - Mark Overmeer
@@ -11,6 +11,8 @@ configure_requires:
 build_requires:
     ExtUtils::MakeMaker:  0
 requires:
+    Digest::SHA1:         0
+    Encode:               0
     File::Basename:       0
     Log::Report:          0.92
     Test::More:           0.54

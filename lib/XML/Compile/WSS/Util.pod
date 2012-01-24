@@ -36,6 +36,13 @@ F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0
 
 =pod
 
+Export tag C<:utp11> defines constants for the username-token-profile.
+See F<http://docs.oasis-open.org/wss/v1.1/wss-v1.1-spec-os-UsernameTokenProfile.pdf>
+
+  UTP11_PTEXT   UTP11_PDIGEST   UTP11_USERNAME
+
+=pod
+
 Export tag C<:dsig> defines convenient constants
 for signature reference URIs, mainly specified in
 F<http://www.w3.org/TR/2008/REC-xmldsig-core-20080610/>
@@ -119,8 +126,8 @@ F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.12,
-built on August 31, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.13,
+built on January 25, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -146,7 +153,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2011-2012 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

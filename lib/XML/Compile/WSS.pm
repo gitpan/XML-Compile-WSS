@@ -1,4 +1,4 @@
-# Copyrights 2011 by Mark Overmeer.
+# Copyrights 2011-2012 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -7,21 +7,23 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 
 use Log::Report 'xml-compile-wss';
 
-use XML::Compile::WSS::Util ':wss11';
-use XML::Compile::Util       qw/SCHEMA2001/;
+use XML::Compile::WSS::Util qw/:wss11 UTP11_PDIGEST/;
+use XML::Compile::Util      qw/SCHEMA2001/;
 use XML::Compile::C14N;
 
-use File::Basename           qw/dirname/;
+use File::Basename          qw/dirname/;
+use Digest::SHA1            qw/sha1_base64/;
+use Encode                  qw/encode/;
 
 my @prefixes11 = 
- ( wss  => WSS_11,  wsu    => WSU_10,    wsse  => WSSE_10
- , ds   => DSIG_NS, dsig11 => DSIG11_NS, dsigm => DSIG_MORE_NS
- , xenc => XENC_NS, ghc    => GHC_NS,    dsp   => DSP_NS
+ ( wss   => WSS_11,  wsu    => WSU_10,    wsse  => WSSE_10
+ , ds    => DSIG_NS, dsig11 => DSIG11_NS, dsigm => DSIG_MORE_NS
+ , xenc  => XENC_NS, ghc    => GHC_NS,    dsp   => DSP_NS
  );
 
 my %versions =
@@ -57,18 +59,20 @@ sub schema()  {shift->{XCW_schema}}
 
 #-----------
 
-sub wsseBasicAuth($$)
-{   my ($self, $username, $password) = @_;
-
+sub wsseBasicAuth($$;$)
+{   my ($self, $username, $password, $type) = @_;
     my $schema = $self->schema or panic;
     my $pwtype = $schema->findName('wsse:Password');
     my $untype = $schema->findName('wsse:UsernameToken');
 
+    $password  = sha1_base64 encode($password, 'utf8')
+        if $type && $type eq UTP11_PDIGEST;
+
     my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
     my $pwnode = $schema->writer($pwtype, include_namespaces => 0)
-        ->($doc, $password);
+        ->($doc, {_ => $password, Type => $type} );
     my $token  = $schema->writer($untype, include_namespaces => 0)
-        ->($doc, { wsse_Username => $username, $pwtype => $pwnode } );
+        ->($doc, {wsse_Username => $username, $pwtype => $pwnode} );
 
     +{ $untype => $token };
 }

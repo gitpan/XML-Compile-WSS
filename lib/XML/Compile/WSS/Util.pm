@@ -1,4 +1,4 @@
-# Copyrights 2011 by Mark Overmeer.
+# Copyrights 2011-2012 by Mark Overmeer.
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Util;
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use base 'Exporter';
 
@@ -65,9 +65,13 @@ my @dsp = qw/
 DSP_NS
  /;
 
+my @utp11 = qw/
+UTP11_PTEXT     UTP11_PDIGEST   UTP11_USERNAME
+ /;
+
 our @EXPORT    = 'WSS11MODULE';
 our @EXPORT_OK
-  = (@wss11, @wsse, @dsig, @dsig_more, @dsig11, @xenc, @ghc, @dsp);
+  = ( @wss11, @wsse, @dsig, @dsig_more, @dsig11, @xenc, @ghc, @dsp, @utp11);
 
 our %EXPORT_TAGS =
   ( wss11  => \@wss11
@@ -78,6 +82,7 @@ our %EXPORT_TAGS =
   , xenc   => \@xenc
   , ghc    => \@ghc
   , dsp    => \@dsp
+  , utp11  => \@utp11
   );
 
 
@@ -96,10 +101,12 @@ use constant
   };
 
 
+use constant WSS_WG200401 => WSS_BASE.'/2004/01/oasis-200401-wss';
 use constant
   { WSS_11  => WSS_BASE.'/oasis-wss-wssecurity-secext-1.1.xsd'
-  , WSU_10  => WSS_BASE.'/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd' 
-  , WSSE_10 => WSS_BASE.'/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd'
+  , WSU_10  => WSS_WG200401.'-wssecurity-utility-1.0.xsd' 
+  , WSSE_10 => WSS_WG200401.'-wssecurity-secext-1.0.xsd'
+  , UTP_11  => WSS_WG200401.'-username-token-profile-1.0'
   };
 
 use constant WSS11MODULE => WSS_11;
@@ -111,6 +118,13 @@ use constant
   , WSSE_X509v3  => WSSE_10.'#X509v3'
   , WSSE_X509PKI => WSSE_10.'#X509PKIPathv1'
   , WSSE_X509PKC => WSSE_10.'#X509PKCS7'
+  };
+
+
+use constant
+  { UTP11_PTEXT    => UTP_11.'#PasswordText'
+  , UTP11_PDIGEST  => UTP_11.'#PasswordDigest'
+  , UTP11_USERNAME => UTP_11.'#UsernameToken'
   };
 
 

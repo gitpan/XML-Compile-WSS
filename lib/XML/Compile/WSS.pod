@@ -63,9 +63,9 @@ The only option is currently C<WSS11MODULE>.
 
 =over 4
 
-=item $obj-E<gt>B<schema>
+=item $obj-E<gt>B<schema>()
 
-=item $obj-E<gt>B<version>
+=item $obj-E<gt>B<version>()
 
 Returns the version number.
 
@@ -75,14 +75,18 @@ Returns the version number.
 
 =over 4
 
-=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD)
+=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE])
 
 Many SOAP applications require a username/password authentication, like
 HTTP's basic authentication. See F<examples/usertoken/manually.pl> for
 an example how to construct this by hand for any possible requirement.
-
 This method, however, offers a simplification for the usual case. See
 a working example in F<examples/usertoken/with_help.pl>
+
+The optional PWTYPE parameter contains either the UTP11_PTEXT or
+UTP11_PDIGEST constant. The PTEXT is the plain-text version of the
+password. When PDIGEST is used, the password will get encrypted for
+you.
 
 example: how to use wsseBasicAuth
 
@@ -93,6 +97,10 @@ example: how to use wsseBasicAuth
     ( wsse_Security => $security
     , %payload
     );
+
+  use XML::Compiles::WSS::Util ':utp11';
+  my $sec = $wss->wsseBasicAuth($user, $password, UTP11_PTEXT);
+  my $sec = $wss->wsseBasicAuth($user, $password, UTP11_PDIGEST);
 
 =back
 
@@ -146,8 +154,8 @@ F<http://www.ietf.org/rfc/rfc4051.txt>, april 2005
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.12,
-built on August 31, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.13,
+built on January 25, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -173,7 +181,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2011-2012 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

@@ -57,11 +57,11 @@ that specification with SOAP.
 
 =over 4
 
-=item $obj-E<gt>B<schema>
+=item $obj-E<gt>B<schema>()
 
 See L<XML::Compile::WSS/"Attributes">
 
-=item $obj-E<gt>B<version>
+=item $obj-E<gt>B<version>()
 
 See L<XML::Compile::WSS/"Attributes">
 
@@ -71,7 +71,7 @@ See L<XML::Compile::WSS/"Attributes">
 
 =over 4
 
-=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD)
+=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE])
 
 See L<XML::Compile::WSS/"Simplifications">
 
@@ -91,8 +91,8 @@ See L<XML::Compile::WSS/"Internals">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.12,
-built on August 31, 2011. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.13,
+built on January 25, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -118,7 +118,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011 by Mark Overmeer. For other contributors see ChangeLog.
+Copyrights 2011-2012 by Mark Overmeer. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
