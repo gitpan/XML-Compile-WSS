@@ -1,4 +1,4 @@
-# Copyrights 2011-2012 by Mark Overmeer.
+# Copyrights 2011-2012 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.00.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 
 use Log::Report 'xml-compile-wss';
@@ -65,7 +65,7 @@ sub wsseBasicAuth($$;$)
     my $pwtype = $schema->findName('wsse:Password');
     my $untype = $schema->findName('wsse:UsernameToken');
 
-    $password  = sha1_base64 encode($password, 'utf8')
+    $password  = sha1_base64 encode(utf8 => $password)
         if $type && $type eq UTP11_PDIGEST;
 
     my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');

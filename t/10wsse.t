@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+
+use Test::More tests => 2;
+
+use XML::Compile::WSDL11 ;
+use XML::Compile::SOAP::WSS ;
+use XML::Compile::WSS::Util qw/:wss11 :utp11/ ;
+
+## How to get a relative path right??
+my $wsdl = XML::Compile::WSDL11->new( 'examples/wsse/example.wsdl') ;
+my $wss  = XML::Compile::SOAP::WSS->new( version => 1.1, schema => $wsdl);
+ok($wss, 'Created a WSS object');
+my $sec  = $wss->wsseBasicAuth( 'foo', 'bar', UTP11_PDIGEST);
+ok($sec, '#PasswordDigest returns something sensible');
+
