@@ -13,7 +13,16 @@ XML::Compile::WSS - OASIS Web Services Security
  my $wss    = XML::Compile::WSS->new(version => '1.1'
    , schema => $schema);
  
- use XML::Compile::WSS::Util ':wss11'
+ use XML::Compile::WSS::Util qw/:wss11 :utp11/;
+ my $secPlain = $wss->wsseBasicAuth($username, $password, UTP11_TEXT);
+
+ my $nonce     = 'some random string' ;
+ my $created   = time();   # now (=default), or any pre-formatted date
+ my $secDigest = $wss->wsseBasicAuth($username, $password, UTP11_PDIGEST
+    , nonce => $nonce, created => $now, wsu_Id => 'foo');
+
+ my $expires   = $created + 5 * 60;  # or any pre-formatted date
+ my $sec_Time  = $wss->wsseTimestamp($created, $expires, wsu_Id => 'biz');
 
 =head1 DESCRIPTION
 
@@ -75,18 +84,59 @@ Returns the version number.
 
 =over 4
 
-=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE])
+=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE, OPTIONS])
 
 Many SOAP applications require a username/password authentication, like
 HTTP's basic authentication. See F<examples/usertoken/manually.pl> for
 an example how to construct this by hand for any possible requirement.
-This method, however, offers a simplification for the usual case. See
-a working example in F<examples/usertoken/with_help.pl>
+This method, however, offers a simplification for the usual case.  See
+also working examples in F<examples/usertoken/with_help.pl> and
+F<examples/usertoken/with_help_digest.pl>.
 
-The optional PWTYPE parameter contains either the UTP11_PTEXT or
-UTP11_PDIGEST constant. The PTEXT is the plain-text version of the
-password. When PDIGEST is used, the password will get encrypted for
-you.
+The optional PWTYPE parameter contains either the UTP11_PTEXT (default)
+or UTP11_PDIGEST constant. The C<PTEXT> is the plain-text version of the
+PASSWORD.
+
+If PTWTYPE IS C<UTP11_PDIGEST>, the plain-text password will be
+encrypted with SHA1.  The OPTIONS can be used to salt the digest
+with "nonce" and/or "created" information before the encryption.
+
+ -Option --Default
+  created  undef
+  nonce    undef
+  wsu_Id   undef
+
+=over 2
+
+=item created => STRING|TIME
+
+An extra "created" child element will be added.  The specification
+allows a free-format STRING.  If you pass a number, it will get converted
+into the standard iso dateTime format automatically.
+
+  <wsse:UsernameToken>
+     ...
+     <wsu:Created>$created</wsu:Created>
+
+There is no mechanism for adding a C<ValueType> attribute to this element.
+The time string will be prepended to the password before the digest
+is computed.
+
+=item nonce => STRING
+
+This will cause an extra child to be added to the C<UsernameToken>, namely
+
+  <wsse:Nonce>$enc</wsse:Nonce>
+
+where C<$enc> is the base64-encoding of the STRING.  The STRING will
+be prepended to the password (and to any "created" information) before
+the digest is computed.
+
+=item wsu_Id => STRING
+
+Adds a C<wsu:Id> attribute to the created element.
+
+=back
 
 example: how to use wsseBasicAuth
 
@@ -100,7 +150,46 @@ example: how to use wsseBasicAuth
 
   use XML::Compiles::WSS::Util ':utp11';
   my $sec = $wss->wsseBasicAuth($user, $password, UTP11_PTEXT);
-  my $sec = $wss->wsseBasicAuth($user, $password, UTP11_PDIGEST);
+
+  my $sec = $wss->wsseBasicAuth($user, $password, UTP11_PDIGEST
+     , created => time());
+
+=item $obj-E<gt>B<wsseTimestamp>(CREATED, EXPIRES, OPTIONS)
+
+CREATED and EXPIRES are timestamps: either some STRING (any format is
+allowed by the spec, so hard to check automatically) or a NUMERIC
+which is converted to ISO dateTime format for you.
+
+This method does I<not> support adding a "ValueType" attribute to any
+of the elements.
+See a working example in F<examples/usertoken/with_help_digest.pl>.
+
+ -Option--Default
+  wsu_Id  undef
+
+=over 2
+
+=item wsu_Id => LABEL
+
+Adds a C<wsu:Id> attribute to the C<UsernameToken>, namely
+
+   <wsse:UsernameToken wsu:Id="LABEL">
+
+=back
+
+example: how to use wsseTimestamp
+
+   my $created = time();
+   my $expires = '2019-08-17T12:07:26Z';
+   my $expires = $created + 300;  # alternative: + 5 minutes
+   my $node = $wss->wsseTimestamp($created, $expires, wsu_Id => 'label');
+
+produces
+
+   <wsu:Timestamp wsu:Id="label">
+     <wsu:Created>2012-08-17T12:02:26Z</wsu:Created>
+     <wsu:Expires>2019-08-17T12:07:26Z</wsu:Expires>
+   </wsu:Timestamp>
 
 =back
 
@@ -122,14 +211,6 @@ C<allow_undeclared> flag will be set. Also, C<any_element> will be set to
 
 =over 4
 
-=item XML Signature Syntax and Processing (Second Edition)
-
-F<http://www.w3.org/TR/2008/REC-xmldsig-core-20080610/>, 10 June 2008
-
-=item XML Encryption Syntax and Processing
-
-F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>, 10 December 2002
-
 =item XML Security Generic Hybrid Ciphers
 
 F<http://www.w3.org/TR/2011/CR-xmlsec-generic-hybrid-20110303/>, 3 March 2011
@@ -142,6 +223,14 @@ F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>, 3 March 2011
 
 F<http://www.w3.org/TR/2011/CR-xmldsig-core1-20110303/>, 3 March 2011
 
+=item SOAP message security
+
+F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0.pdf>, March 2004
+
+=item XML Signature Syntax and Processing (Second Edition)
+
+F<http://www.w3.org/TR/2008/REC-xmldsig-core-20080610/>, 10 June 2008
+
 =item RFC4050 Using the ECDSA for XML Digital Signatures
 
 F<http://www.ietf.org/rfc/rfc4050.txt>, april 2005
@@ -150,12 +239,16 @@ F<http://www.ietf.org/rfc/rfc4050.txt>, april 2005
 
 F<http://www.ietf.org/rfc/rfc4051.txt>, april 2005
 
+=item XML Encryption Syntax and Processing
+
+F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>, 10 December 2002
+
 =back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.14,
-built on July 31, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.90,
+built on August 30, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

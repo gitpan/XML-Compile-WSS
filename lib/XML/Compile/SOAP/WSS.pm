@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::WSS;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.90';
 
 use base 'XML::Compile::WSS', 'XML::Compile::SOAP::Extension';
 

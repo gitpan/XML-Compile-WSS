@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.90';
 
 
 use Log::Report 'xml-compile-wss';
@@ -19,6 +19,8 @@ use XML::Compile::C14N;
 use File::Basename          qw/dirname/;
 use Digest::SHA1            qw/sha1_base64/;
 use Encode                  qw/encode/;
+use MIME::Base64            qw/encode_base64/;
+use POSIX                   qw/strftime/;
 
 my @prefixes11 = 
  ( wss   => WSS_11,  wsu    => WSU_10,    wsse  => WSSE_10
@@ -59,20 +61,89 @@ sub schema()  {shift->{XCW_schema}}
 
 #-----------
 
-sub wsseBasicAuth($$;$)
-{   my ($self, $username, $password, $type) = @_;
+# Some elements are allowed to have an Id attribute from the wsu
+# schema, regardless of what the actual schema documents say.  So an
+# attribute "wsu_Id" should get interpreted as such, if the writer
+# has registered this hook.
+sub _hook_WSU_ID
+{   my ($doc, $values, $path, $tag, $r) = @_ ;
+    my $id = delete $values->{wsu_Id};  # remove first, to avoid $r complaining
+    my $node = $r->($doc, $values);
+    if($id)
+    {   $node->setNamespace(WSU_10, 'wsu', 0);
+        $node->setAttributeNS(WSU_10, 'Id' => $id);
+    }
+    $node;
+}
+
+sub _datetime($)
+{   my $time = shift;
+    return $time if !$time || $time =~ m/[^0-9.]/;
+
+    my $subsec = $time =~ /(\.[0-9]+)/ ? $1 : '';
+    strftime "%Y-%m-%dT%H:%M:%S${subsec}Z", gmtime $time;
+}
+
+
+sub wsseTimestamp($$%)
+{   my ($self, $created, $expires, %opts) = @_ ;
+
+    my $schema   = $self->schema or panic;
+    my $timestamptype = $schema->findName('wsu:Timestamp') ;
+    my $doc      = XML::LibXML::Document->new('1.0', 'UTF-8');
+
+    my $tsWriter = $schema->writer($timestamptype, include_namespaces => 1,
+      , hook => {type => 'wsu:TimestampType', replace => \&_hook_WSU_ID} );
+
+    my $tsToken  = $tsWriter->($doc, {wsu_Id => $opts{wsu_Id}
+      , wsu_Created => _datetime($created)
+      , wsu_Expires => _datetime($expires)});
+
+    +{$timestamptype => $tsToken};
+}
+
+
+sub wsseBasicAuth($$;$%)
+{   my ($self, $username, $password, $type, %opts) = @_;
     my $schema = $self->schema or panic;
-    my $pwtype = $schema->findName('wsse:Password');
-    my $untype = $schema->findName('wsse:UsernameToken');
-
-    $password  = sha1_base64 encode(utf8 => $password)
-        if $type && $type eq UTP11_PDIGEST;
-
     my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
+
+    # The spec says we include "created" and "nonce" nodes if they're present.
+    my @additional;
+    if($type eq UTP11_PDIGEST)
+    {  
+        my $nonce = $opts{nonce} || '';
+        if($nonce)
+        {   my $noncetype = $schema->findName('wsse:Nonce') ;
+            my $noncenode = $schema->writer($noncetype, include_namespaces => 0)
+               ->($doc, {_ => encode_base64($nonce)});
+            push @additional, $noncetype => $noncenode;
+        }
+
+        my $created = $opts{created} || '';
+        if($created)
+        {    my $createdtype = $schema->findName('wsu:Created' ) ;
+             my $cnode = $schema->writer($createdtype, include_namespaces => 0)
+               ->($doc, {_ => _datetime($created) } );
+             push @additional, $createdtype => $cnode;
+        }
+
+        $password = sha1_base64(encode utf8 => "$nonce$created$password").'=';
+    }
+
+    my $pwtype = $schema->findName('wsse:Password');
     my $pwnode = $schema->writer($pwtype, include_namespaces => 0)
-        ->($doc, {_ => $password, Type => $type} );
-    my $token  = $schema->writer($untype, include_namespaces => 0)
-        ->($doc, {wsse_Username => $username, $pwtype => $pwnode} );
+        ->($doc, {_ => $password, Type => $type});
+    push @additional, $pwtype => $pwnode;
+
+    # UsernameToken is allowed to have an "Id" attribute from the wsu schema.
+    # We set up the writer with a hook to add that particular attribute.
+    my $untype   = $schema->findName('wsse:UsernameToken');
+    my $unwriter = $schema->writer($untype, include_namespaces => 1,
+      , hook => {type => 'wsse:UsernameTokenType', replace => \&_hook_WSU_ID});
+
+    my $token   = $unwriter->($doc
+      , {wsu_Id => $opts{wsu_Id}, wsse_Username => $username, @additional});
 
     +{ $untype => $token };
 }

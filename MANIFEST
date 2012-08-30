@@ -8,6 +8,7 @@ examples/enc/enc-example.xml
 examples/enc/read_example.pl
 examples/usertoken/manually.pl
 examples/usertoken/with_help.pl
+examples/usertoken/with_help_digest.pl
 examples/wsse/README
 examples/wsse/example.wsdl
 examples/wsse/read_example.pl
@@ -29,6 +30,7 @@ lib/XML/Compile/WSS/wss11/wss-secext-1.1.xsd
 lib/XML/Compile/WSS/wss11/xmldsig11-schema.xsd
 t/01use.t
 t/10wsse.t
+t/11digest.t
 xt/99pod.t
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

@@ -23,7 +23,8 @@ XML::Compile::SOAP::WSS - Web Service Security used in SOAP
  my $call = $wsdl->compileClient('some_operation');
 
  # security header fields start with wss_ or wsu_
- my ($data, $trace) = $call->(wsse_Security => {...}, %data);
+ my $token = $wss->wsseBasicAuth($user, $password);
+ my ($data, $trace) = $call->(wsse_Security => $token, %data);
 
 =head1 DESCRIPTION
 
@@ -71,7 +72,11 @@ See L<XML::Compile::WSS/"Attributes">
 
 =over 4
 
-=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE])
+=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE, OPTIONS])
+
+See L<XML::Compile::WSS/"Simplifications">
+
+=item $obj-E<gt>B<wsseTimestamp>(CREATED, EXPIRES, OPTIONS)
 
 See L<XML::Compile::WSS/"Simplifications">
 
@@ -91,8 +96,8 @@ See L<XML::Compile::WSS/"Internals">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.14,
-built on July 31, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 0.90,
+built on August 30, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

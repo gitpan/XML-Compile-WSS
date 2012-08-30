@@ -4,7 +4,7 @@ use 5.008;
 
 WriteMakefile
  ( NAME	 	=> 'XML::Compile::WSS'
- , VERSION	=> '0.14'
+ , VERSION	=> '0.90'
 
  , PREREQ_PM    =>
      { XML::Compile         => '1.21'
@@ -17,6 +17,7 @@ WriteMakefile
      , Encode               => 0
      , Test::More           => 0.54
      , File::Basename       => 0
+     , MIME::Base64         => 0
      }
  , EXE_FILES    => []
  , AUTHOR       => 'Mark Overmeer'

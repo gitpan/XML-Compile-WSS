@@ -1,6 +1,11 @@
 
 ==== version history of XML::Compile:WSS
 
+version 0.90: Thu Aug 30 09:21:56 CEST 2012
+	- add support for wsseTimestamp and extended Usertoken, with
+	  examples/usertoken/with_help_digest.pl, and t/11digest.t.
+	  Contributed by [David McMath]
+
 version 0.14: Tue Jul 31 21:41:25 CEST 2012
 	- fix: swap parameters to encode password.  With test patched by
 	  rt.cpan.org#78698 [David Tindall Mcmath]
