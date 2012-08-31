@@ -31,6 +31,7 @@ lib/XML/Compile/WSS/wss11/xmldsig11-schema.xsd
 t/01use.t
 t/10wsse.t
 t/11digest.t
+t/12numeric_created.t
 xt/99pod.t
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

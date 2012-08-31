@@ -5,7 +5,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 18;
+use Test::More tests => 33;
 
 use MIME::Base64            qw/decode_base64/;
 
@@ -19,7 +19,7 @@ use XML::LibXML::XPathContext;
 
 my $myns   = 'http://msgsec.wssecfvt.ws.ibm.com';
 my ($username, $password, $operation) = qw/username password version/;
-my $usernameId = 'foo';
+my $usernameId  = 'foo';
 my $timestampId = 'baz';
 
 ## How to get a relative path right??
@@ -59,6 +59,22 @@ is( $answer->{body}, $theCorrectAnswer, 'Round-trip to server worked' );
 # print $trace->printRequest;
 # use Data::Dumper;
 # print Dumper $answer;
+
+{
+    # Ticket 79315 notes that "text" passwords just skip Nonce and
+    # Created.  This seems like a reasonable place to check that
+    # (although maybe the filename should change from "digest").
+    my $usernameToken = $wss->wsseBasicAuth($username, $password, UTP11_PTEXT
+      , nonce => $nonce, created => $now, wsu_Id => $usernameId);
+    ok($usernameToken, 'PasswordText returns something sensible');
+    
+    my ($answer, $trace) = $getVersion->
+        ( wsse_Security => { %$usernameToken, %$timestampToken }
+              , () # %payload
+          );
+
+    is($answer->{body}, $theCorrectAnswer, 'Round-trip to server worked');
+}
 
 #### HELPERS, for testing only
 

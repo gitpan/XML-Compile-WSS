@@ -1,6 +1,13 @@
 
 ==== version history of XML::Compile:WSS
 
+version 0.91: Fri Aug 31 17:03:22 CEST 2012
+	- always permit nonce and created in wsseBasicAuth, not just
+	  in combination with UTP11_PDIGEST
+	  rt.cpan.org #79315 [David McMath]
+	- fix missing xmlns:wsu when wsseBasicAuth it called repetatively.
+	  rt.cpan.org #79318 [David McMath]
+
 version 0.90: Thu Aug 30 09:21:56 CEST 2012
 	- add support for wsseTimestamp and extended Usertoken, with
 	  examples/usertoken/with_help_digest.pl, and t/11digest.t.
