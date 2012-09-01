@@ -1,6 +1,11 @@
 
 ==== version history of XML::Compile:WSS
 
+version 0.911: Sat Sep  1 13:00:53 CEST 2012
+	Fixes:
+	- wsseBasicAuth did not use default UTP11_PTEXT anymore
+	  [Caleb Cushing]
+
 version 0.91: Fri Aug 31 17:03:22 CEST 2012
 	- always permit nonce and created in wsseBasicAuth, not just
 	  in combination with UTP11_PDIGEST

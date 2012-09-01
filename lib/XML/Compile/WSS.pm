@@ -7,12 +7,12 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '0.91';
+$VERSION = '0.911';
 
 
 use Log::Report 'xml-compile-wss';
 
-use XML::Compile::WSS::Util qw/:wss11 UTP11_PDIGEST/;
+use XML::Compile::WSS::Util qw/:wss11 UTP11_PDIGEST UTP11_PTEXT/;
 use XML::Compile::Util      qw/SCHEMA2001/;
 use XML::Compile::C14N;
 
@@ -105,6 +105,7 @@ sub wsseTimestamp($$%)
 
 sub wsseBasicAuth($$;$%)
 {   my ($self, $username, $password, $type, %opts) = @_;
+    $type    ||= UTP11_PTEXT;
     my $schema = $self->schema or panic;
     my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
 

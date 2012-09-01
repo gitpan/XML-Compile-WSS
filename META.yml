@@ -28,4 +28,4 @@ requires:
   XML::Compile::C14N: 0.10
   XML::Compile::Cache: 0.99
   XML::Compile::SOAP: 2.23
-version: 0.91
+version: 0.911
