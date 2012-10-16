@@ -18,6 +18,12 @@ lib/XML/Compile/SOAP/WSS.pm
 lib/XML/Compile/SOAP/WSS.pod
 lib/XML/Compile/WSS.pm
 lib/XML/Compile/WSS.pod
+lib/XML/Compile/WSS/BasicAuth.pm
+lib/XML/Compile/WSS/BasicAuth.pod
+lib/XML/Compile/WSS/Signature.pm
+lib/XML/Compile/WSS/Signature.pod
+lib/XML/Compile/WSS/Timestamp.pm
+lib/XML/Compile/WSS/Timestamp.pod
 lib/XML/Compile/WSS/Util.pm
 lib/XML/Compile/WSS/Util.pod
 lib/XML/Compile/WSS/wss11/200009-xmldsig.xsd
@@ -29,9 +35,12 @@ lib/XML/Compile/WSS/wss11/20110303-xmldsig-properties.xsd
 lib/XML/Compile/WSS/wss11/wss-secext-1.1.xsd
 lib/XML/Compile/WSS/wss11/xmldsig11-schema.xsd
 t/01use.t
-t/10wsse.t
+t/10basic.t
 t/11digest.t
 t/12numeric_created.t
+t/90old-basic.t
+t/91old-digest.t
+t/92old-num.t
 xt/99pod.t
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

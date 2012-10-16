@@ -5,7 +5,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 32;
+use Test::More tests => 33;
 
 use MIME::Base64            qw/decode_base64/;
 
@@ -21,31 +21,11 @@ my $myns   = 'http://msgsec.wssecfvt.ws.ibm.com';
 my ($username, $password, $operation) = qw/username password version/;
 my $usernameId  = 'foo';
 my $timestampId = 'baz';
-my $nonce   = 'insecure';
-my $now     = '2012-08-17T12:02:26Z';
-my $then    = '2012-08-17T12:02:31Z';
-#my $now = time;
-#my $then = $now + 30;
 
-my $wss     = XML::Compile::SOAP::WSS->new;
-my $wsdl    = XML::Compile::WSDL11->new('examples/wsse/example.wsdl');
-
-my $auth = $wss->basicAuth
-  ( username => $username
-  , password => $password
-  , pwformat => UTP11_PDIGEST
-  , nonce    => $nonce
-  , created  => $now
-  , wsu_Id   => $usernameId
-  );
-ok($auth, 'Created basic-auth object');
-
-my $ts = $wss->timestamp
-  ( created => $now
-  , expires => $then
-  , wsu_Id  => $timestampId
-  );
-ok($auth, 'Created Timestamping object');
+## How to get a relative path right??
+my $wsdl = XML::Compile::WSDL11->new('examples/wsse/example.wsdl');
+my $wss  = XML::Compile::SOAP::WSS->new(version => 1.1, schema => $wsdl);
+ok($wss, 'Created a WSS object');
 
 my $getVersion = $wsdl->compileClient
   ( $operation
@@ -53,10 +33,27 @@ my $getVersion = $wsdl->compileClient
   # to overrule server as in wsdl, for testing only
     , transport_hook => \&test_server
   );
+ok( $getVersion, "$operation compiled with test server" );
 
-ok($getVersion, "$operation compiled with test server");
+my $now   = '2012-08-17T12:02:26Z';
+my $then  = '2012-08-17T12:02:31Z';
+my $nonce = 'insecure';
+
+my $usernameToken = $wss->wsseBasicAuth($username, $password, UTP11_PDIGEST
+					, nonce => $nonce, created => $now
+ 					, wsu_Id => $usernameId
+				       );
+ok($usernameToken, 'PasswordDigest returns something sensible');
+
+my $timestampToken = $wss->wsseTimestamp( $now, $then, wsu_Id => $timestampId );
+ok($timestampToken, 'Timestamp is sensible');
+
 my $theCorrectAnswer = 42;
-my ($answer, $trace) = $getVersion->();
+
+my ($answer, $trace) = $getVersion->
+  ( wsse_Security => { %$usernameToken, %$timestampToken }
+  , () # %payload
+  );
 
 is( $answer->{body}, $theCorrectAnswer, 'Round-trip to server worked' );
 # print $trace->printRequest;
@@ -66,19 +63,16 @@ is( $answer->{body}, $theCorrectAnswer, 'Round-trip to server worked' );
 {
     # Ticket 79315 notes that "text" passwords just skip Nonce and
     # Created.  This seems like a reasonable place to check that
-    my $auth2  = $wss->basicAuth
-      ( schema   => $wsdl
-      , username => $username
-      , password => $password
-      , pwformat => UTP11_PTEXT
-      , nonce    => $nonce
-      , created  => $now
-      , wsu_Id   => $usernameId
-      );
-
-    ok($auth2, 'PasswordText returns something sensible');
+    # (although maybe the filename should change from "digest").
+    my $usernameToken = $wss->wsseBasicAuth($username, $password, UTP11_PTEXT
+      , nonce => $nonce, created => $now, wsu_Id => $usernameId);
+    ok($usernameToken, 'PasswordText returns something sensible');
     
-    my ($answer, $trace) = $getVersion->(wsse_Security => [$auth2, $ts]);
+    my ($answer, $trace) = $getVersion->
+        ( wsse_Security => { %$usernameToken, %$timestampToken }
+              , () # %payload
+          );
+
     is($answer->{body}, $theCorrectAnswer, 'Round-trip to server worked');
 }
 
@@ -88,7 +82,6 @@ sub test_server
 {   my ($request, $trace) = @_;
     my $content = $request->decoded_content;
 
-#warn $content;
     eval {
       my $contentDoc = XML::LibXML->load_xml( string => $content );
       ok( $contentDoc, 'Content is parseable' );

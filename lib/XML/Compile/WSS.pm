@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '0.911';
+$VERSION = '1.00';
 
 
 use Log::Report 'xml-compile-wss';
@@ -15,6 +15,7 @@ use Log::Report 'xml-compile-wss';
 use XML::Compile::WSS::Util qw/:wss11 UTP11_PDIGEST UTP11_PTEXT/;
 use XML::Compile::Util      qw/SCHEMA2001/;
 use XML::Compile::C14N;
+use XML::Compile::Schema::BuiltInTypes qw/builtin_type_info/;
 
 use File::Basename          qw/dirname/;
 use Digest::SHA1            qw/sha1_base64/;
@@ -33,10 +34,16 @@ my %versions =
   );
 
 
-sub new(@) { my $class = shift; (bless {}, $class)->init( {@_} ) }
+sub new(@)
+{   my $class = shift;
+    my $args  = @_==1 ? shift : {@_};
+    (bless {}, $class)->init($args)->prepare;
+}
+
+my $schema;
 sub init($)
 {   my ($self, $args) = @_;
-    my $version = $args->{version}
+    my $version = $args->{wss_version} || $args->{version}
         or error __x"explicit wss_version required";
     trace "initializing wss $version";
 
@@ -48,16 +55,24 @@ sub init($)
              , v => $version, vs => [keys %versions];
     $self->{XCW_version} = $version;
 
-    $self->loadSchemas($args->{schema})
-        if $args->{schema};
+    if($schema = $args->{schema})
+    {   my $class = ref $self;    # it is class, not object, related!
+        $class->loadSchemas($args->{schema}, $version);
+    }
+    $self;
+}
 
+sub prepare($)
+{   my ($self, $args) = @_;
+    $self->prepareWriting($schema);
+    $self->prepareReading($schema);
     $self;
 }
 
 #-----------
 
 sub version() {shift->{XCW_version}}
-sub schema()  {shift->{XCW_schema}}
+sub schema()  {$schema}
 
 #-----------
 
@@ -76,94 +91,33 @@ sub _hook_WSU_ID
     $node;
 }
 
-sub _datetime($)
-{   my $time = shift;
-    return $time if !$time || $time =~ m/[^0-9.]/;
-
-    my $subsec = $time =~ /(\.[0-9]+)/ ? $1 : '';
-    strftime "%Y-%m-%dT%H:%M:%S${subsec}Z", gmtime $time;
-}
-
-
-sub wsseTimestamp($$%)
-{   my ($self, $created, $expires, %opts) = @_ ;
-
-    my $schema   = $self->schema or panic;
-    my $timestamptype = $schema->findName('wsu:Timestamp') ;
-    my $doc      = XML::LibXML::Document->new('1.0', 'UTF-8');
-
-    my $tsWriter = $schema->writer($timestamptype, include_namespaces => 1,
-      , hook => {type => 'wsu:TimestampType', replace => \&_hook_WSU_ID} );
-
-    my $tsToken  = $tsWriter->($doc, {wsu_Id => $opts{wsu_Id}
-      , wsu_Created => _datetime($created)
-      , wsu_Expires => _datetime($expires)});
-
-    +{$timestamptype => $tsToken};
-}
-
-
-sub wsseBasicAuth($$;$%)
-{   my ($self, $username, $password, $type, %opts) = @_;
-    $type    ||= UTP11_PTEXT;
-    my $schema = $self->schema or panic;
-    my $doc    = XML::LibXML::Document->new('1.0', 'UTF-8');
-
-    # The spec says we include "created" and "nonce" nodes if they're present.
-    my @additional;
-    my $nonce = $opts{nonce} || '';
-    if($nonce)
-    {   my $noncetype = $schema->findName('wsse:Nonce') ;
-        my $noncenode = $schema->writer($noncetype, include_namespaces => 0)
-            ->($doc, {_ => encode_base64($nonce)});
-        push @additional, $noncetype => $noncenode;
-    }
-
-    my $created = $opts{created} || '';
-    if($created)
-    {   my $createdtype = $schema->findName('wsu:Created' ) ;
-        # If _datetime changes $created into something different,
-        # _that_ is what's going to need to be put into the
-        # digest (if there's a digest).
-        $created = _datetime($created) ;
-        my $cnode = $schema->writer($createdtype, include_namespaces => 1)
-            ->($doc, {_ => $created } );
-        push @additional, $createdtype => $cnode;
-    }
-
-    if($type eq UTP11_PDIGEST)
-    {   $password = sha1_base64(encode utf8 => "$nonce$created$password").'=';
-    }
-
-    my $pwtype = $schema->findName('wsse:Password');
-    my $pwnode = $schema->writer($pwtype, include_namespaces => 0)
-        ->($doc, {_ => $password, Type => $type});
-    push @additional, $pwtype => $pwnode;
-
-    # UsernameToken is allowed to have an "Id" attribute from the wsu schema.
-    # We set up the writer with a hook to add that particular attribute.
-    my $untype   = $schema->findName('wsse:UsernameToken');
-    my $unwriter = $schema->writer($untype, include_namespaces => 1,
-      , hook => {type => 'wsse:UsernameTokenType', replace => \&_hook_WSU_ID});
-
-    my $token   = $unwriter->($doc
-      , {wsu_Id => $opts{wsu_Id}, wsse_Username => $username, @additional});
-
-    +{ $untype => $token };
-}
-
 #-----------
 
-sub loadSchemas($)
-{   my ($self, $schema) = @_;
+# wsu had "allow anything" date fields, not type dateTime
+sub dateTime($)
+{   my ($self, $time) = @_;
+    return $time if !defined $time || ref $time;
+
+    my $dateTime = builtin_type_info 'dateTime';
+    if($time !~ m/[^0-9.]/) { $time = $dateTime->{format}->($time) }
+    elsif($dateTime->{check}->($time)) {}
+    else {return $time}
+
+     +{ _ => $time
+      , ValueType => SCHEMA2001.'/dateTime'
+      };
+}
+
+
+my $schema_loaded = 0;
+sub loadSchemas($$)
+{   my ($class, $schema, $version) = @_;
+    return $class if $schema_loaded++;
 
     $schema->isa('XML::Compile::Cache')
         or error __x"loadSchemas() requires a XML::Compile::Cache object";
-    $self->{XCW_schema} = $schema;
 
-    my $version = $self->version;
-    my $def = $versions{$version};
-
+    my $def      = $versions{$version};
     my $prefixes = $def->{prefixes};
     $schema->prefixes(@$prefixes);
     {   local $" = ',';
@@ -184,24 +138,58 @@ sub loadSchemas($)
        );
 
     # Another schema bug; attribute wsu:Id not declared qualified
+    # Besides, ValueType is often used on timestamps, which are declared
+    # as free-format fields (@*!&$#!&^ design committees!)
     my ($wsu, $xsd) = (WSU_10, SCHEMA2001);
     $schema->importDefinitions( <<__PATCH );
 <schema
   xmlns="$xsd"
+  xmlns:wsu="$wsu"
   targetNamespace="$wsu"
   elementFormDefault="qualified"
-  attributeFormDefault="qualified">
-    <attribute name="Id" type="ID" />
+  attributeFormDefault="unqualified">
+    <attribute name="Id" type="ID" form="qualified" />
+
+    <complexType name="AttributedDateTime">
+      <simpleContent>
+        <extension base="string">
+          <attribute name="ValueType" type="anyURI" />
+          <attributeGroup ref="wsu:commonAtts"/>
+        </extension>
+      </simpleContent>
+   </complexType>
+
 </schema>
 __PATCH
 
-    XML::Compile::C14N->new(version => 1.1, schema => $schema);
+    XML::Compile::C14N->new(version => '1.1', schema => $schema);
     $schema->allowUndeclared(1);
     $schema->addCompileOptions(RW => mixed_elements => 'STRUCTURAL');
     $schema->anyElement('ATTEMPT');
 
-    $self;
+    # If we find a wsse_Security which points to a WSS or an ARRAY of
+    # WSS, we run all of them.
+    my $process_security =
+     +{ type   => 'wsse:SecurityHeaderType'
+      , before => sub {
+        my ($doc, $from, $path) = @_;
+        my $data = {};
+        if( UNIVERSAL::isa($from, 'XML::Compile::SOAP::WSS')
+         || UNIVERSAL::isa($from, __PACKAGE__))
+             { $from->process($doc, $data) }
+        elsif(ref $from eq 'ARRAY')
+             { $_->process($doc, $data) for @$from }
+        else { $data = $from }
+
+        $data;
+    }};
+
+    $schema->declare(WRITER => 'wsse:Security', hooks => $process_security);
+    $schema;
 }
+
+sub prepareWriting($) { shift }
+sub prepareReading($) { shift }
 
 
 1;

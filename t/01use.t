@@ -3,7 +3,7 @@ use warnings;
 use strict;
 
 use lib 'lib';
-use Test::More tests => 3;
+use Test::More tests => 5;
 
 # The versions of the following packages are reported to help understanding
 # the environment in which the tests are run.  This is certainly not a
@@ -14,6 +14,9 @@ my @show_versions =
     XML::Compile::Cache
     XML::Compile::SOAP
     XML::Compile::C14N
+    Digest
+    Crypt::OpenSSL::RSA
+    Crypt::DSA
    /;
 
 foreach my $package (@show_versions)
@@ -30,4 +33,6 @@ foreach my $package (@show_versions)
 
 require_ok('XML::Compile::WSS::Util');
 require_ok('XML::Compile::WSS');
+require_ok('XML::Compile::WSS::BasicAuth');
+require_ok('XML::Compile::WSS::Signature');
 require_ok('XML::Compile::SOAP::WSS');

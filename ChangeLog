@@ -1,8 +1,39 @@
 
 ==== version history of XML::Compile:WSS
 
-version 0.911: Sat Sep  1 13:00:53 CEST 2012
+version 1.00: Tue Oct 16 16:50:10 CEST 2012
+
+	Changes:
+
+	- deprecated ::WSS::wsseBasicAuth() and ::WSS::wsseTimestamps
+	  Still available, tests in t/9?old-*
+
 	Fixes:
+
+	- some export constants for :wsse were incorrect.
+
+	Improvements:
+
+	- option ::WSS::new(wss_version) as alternative to 'version',
+	  which is more clear in some circumstances: there are so many
+	  versioned namespaces involved!
+
+	- implementation of XML::Compile::WSS::Signature
+
+	- implementation of XML::Compile::WSS::BasicAuth
+
+	- implementation of XML::Compile::WSS::Timestamp
+
+	- promote ::WSS::_dateTime to ::WSS::dateTime()
+
+	- automatically add ValueType="$xsd/dateTime" to timestamps when
+	  applicable
+
+
+version 0.911: Sat Sep  1 13:00:53 CEST 2012
+
+	Fixes:
+
 	- wsseBasicAuth did not use default UTP11_PTEXT anymore
 	  [Caleb Cushing]
 

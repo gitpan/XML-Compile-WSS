@@ -5,32 +5,42 @@ XML::Compile::SOAP::WSS - Web Service Security used in SOAP
 =head1 INHERITANCE
 
  XML::Compile::SOAP::WSS
-   is a XML::Compile::WSS
-
- XML::Compile::SOAP::WSS
    is a XML::Compile::SOAP::Extension
 
 =head1 SYNOPSIS
 
- # use WSS via WSDL,
- use XML::Compile::SOAP::WSDL11;  # first
- use XML::Compile::SOAP::WSS;     # hooks into wsdl
+ use XML::Compile::SOAP::WSDL11;
+ use XML::Compile::SOAP::WSS;
 
- # you really need next line
- my $wss  = XML::Compile::SOAP::WSS->new(version => '1.1');
+ # strict order of instantiation!
+ my $wss  = XML::Compile::SOAP::WSS->new; # hooks WSDL parser
+ my $wsdl = XML::Compile::WSDL11->new($wsdlfn);    
 
- my $wsdl = XML::Compile::WSDL11->new(...);
- my $call = $wsdl->compileClient('some_operation');
+ my $auth = $wss->basicAuth               # add Security record
+   ( username => $user
+   , password => $password
+   );
 
- # security header fields start with wss_ or wsu_
- my $token = $wss->wsseBasicAuth($user, $password);
- my ($data, $trace) = $call->(wsse_Security => $token, %data);
+ # Will include all defined security features
+ my $call = $wsdl->compileClient($opname);
+ my ($answer, $trace) = $call->(%data);
+
+ # Only explicit security features:
+ my $call = $wsdl->compileClient($opname);
+ my ($answer, $trace) = $call->(wsse_Security => $auth, %data);
+ my $trace = $call->(wsse_Security => [$auth], %data);
 
 =head1 DESCRIPTION
 
-The Web Service Security protocol is implemented by the super
-class L<XML::Compile::WSS|XML::Compile::WSS>. This extension seeks to integrate
-that specification with SOAP.
+The Web Service Security protocol is implemented in extensions of
+L<XML::Compile::WSS|XML::Compile::WSS>. This module integrates WSS in SOAP usage.
+
+This module is an XML::Compile::SOAP::Extension, a plugin for the
+SOAP code.  Some of these protocols implemented with these plugins
+behave badly: interfere with the WSDL specification.  Therefore, these
+B<WSDL plugins> have to be B<instantiated before> the WSDL files get read.
+The use of the information can only take place when all schema's are read,
+so these B<security features> can only be B<created after> that.
 
 =head1 METHODS
 
@@ -40,17 +50,8 @@ that specification with SOAP.
 
 =item XML::Compile::SOAP::WSS-E<gt>B<new>(OPTIONS)
 
- -Option --Defined in     --Default
-  schema   XML::Compile::WSS  undef
-  version  XML::Compile::WSS  <required>
-
-=over 2
-
-=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
-
-=item version => '1.1'|MODULE
-
-=back
+Usually, you do not call L<new()|XML::Compile::SOAP::WSS/"Constructors"> but one of the specific instantiators.
+Depends of which kind of WSS service you need.
 
 =back
 
@@ -58,46 +59,41 @@ that specification with SOAP.
 
 =over 4
 
+=item $obj-E<gt>B<addWSS>(WSSOBJ)
+
+Add a new L<XML::Compile::WSS|XML::Compile::WSS> object to the list of maintained.
+
 =item $obj-E<gt>B<schema>()
 
-See L<XML::Compile::WSS/"Attributes">
-
-=item $obj-E<gt>B<version>()
-
-See L<XML::Compile::WSS/"Attributes">
+=item $obj-E<gt>B<wssConfigs>()
 
 =back
 
-=head2 Simplifications
+=head2 Security features
 
 =over 4
 
-=item $obj-E<gt>B<wsseBasicAuth>(USERNAME, PASSWORD, [PWTYPE, OPTIONS])
+=item $obj-E<gt>B<basicAuth>(OPTIONS)
 
-See L<XML::Compile::WSS/"Simplifications">
+See documentation in L<XML::Compile::WSS::BasicAuth|XML::Compile::WSS::BasicAuth>.  The OPTIONS are
+passed to its new() method.
 
-=item $obj-E<gt>B<wsseTimestamp>(CREATED, EXPIRES, OPTIONS)
+=item $obj-E<gt>B<signature>(OPTIONS)
 
-See L<XML::Compile::WSS/"Simplifications">
+See documentation in L<XML::Compile::WSS::Signature|XML::Compile::WSS::Signature>.  The OPTIONS are
+passed to its new() method.
 
-=back
+=item $obj-E<gt>B<timestamp>(OPTIONS)
 
-=head2 Internals
-
-=over 4
-
-=item $obj-E<gt>B<loadSchemas>(SCHEMA)
-
-See L<XML::Compile::WSS/"Internals">
+See documentation in L<XML::Compile::WSS::Timestamp|XML::Compile::WSS::Timestamp>.  The OPTIONS are
+passed to its new() method.
 
 =back
-
-=head2 SEE ALSO
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.911,
-built on September 01, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.00,
+built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -7,57 +7,69 @@
 # In version 0.90, this was not true.
 #
 
-use strict ;
-use warnings ;
+use strict;
+use warnings;
 
 use Digest::SHA1            qw/sha1_base64/;
 use Encode                  qw/encode/;
-use MIME::Base64            qw/encode_base64 decode_base64/ ;
+use MIME::Base64            qw/encode_base64 decode_base64/;
 
-use Test::More tests => 24 ;
+use Test::More tests => 24;
 
 use XML::Compile::WSDL11;
-use XML::Compile::SOAP::WSS;
 use XML::Compile::WSS::Util qw/:utp11/;
+use XML::Compile::WSS::BasicAuth;
 
 my ($username, $password) = qw/username password/;
 
 my $wsdl = XML::Compile::WSDL11->new( 'examples/wsse/example.wsdl');
-my $wss  = XML::Compile::SOAP::WSS->new( version => 1.1, schema => $wsdl);
 
-my $now = time() ;
-my $nonce = 'insecure' ;
+my $now   = time();
+my $nonce = 'insecure';
 
-my $untype   = $wss->schema->findName('wsse:UsernameToken');
-my $unreader = $wss->schema->reader($untype) ;
+my @testCases =
+  ( { nonce   => $nonce, created  => $now, _explain => 'integer, with Nonce' }
+  , { created => $now,   _explain => 'integer, no Nonce' }
+  , { nonce   => $nonce, created  => '2012-08-17T12:02:26Z'
+    , _explain => 'string, with Nonce' }
+  , { created => '2012-08-17T12:02:26Z', _explain => 'string, no Nonce' }
+  );
 
-my @testCases = ( { nonce => $nonce, created => $now, _explain => 'integer, with Nonce' },
-                  { created => $now, _explain => 'integer, no Nonce' },
-                  { nonce => $nonce, created => '2012-08-17T12:02:26Z', _explain => 'string, with Nonce' },
-                  { created => '2012-08-17T12:02:26Z', _explain => 'string, no Nonce' },
-              ) ;
+my $unreader;
 
-foreach my $t (@testCases) {
-    my $explain = delete $t->{_explain} || 'huh??' ;
+foreach my $t (@testCases)
+{   my $explain = delete $t->{_explain} || 'huh??';
 
-    my $usernameToken = $wss->wsseBasicAuth($username, $password, UTP11_PDIGEST
-                                                , %$t
-                                            );
-    ok($usernameToken, "PasswordDigest returns something sensible, $explain");
-    my $utString = $usernameToken->{$untype}->toString() ;
+    my $wss  = XML::Compile::WSS::BasicAuth->new
+      ( schema   => $wsdl
+      , username => $username
+      , password => $password
+      , pwformat => UTP11_PDIGEST
+      , nonce    => ''
+      , %$t
+      );
+
+    my $doc  = XML::LibXML::Document->new('1.0', 'UTF-8');
+    my $data = $wss->process($doc, {});
+    my ($type, $xml) = %$data;
+
+    ok($xml, "PasswordDigest returns something sensible, $explain");
+
+    $unreader  ||= $wss->schema->reader('wsse:UsernameToken');
+    my $utString = $xml->toString(1);
 
     ok( my $p = eval { $unreader->($utString) }
             , "UsernameToken is legible, $explain" )
-        or do { diag($@) ; diag( "Bad string (skip encryption test):\n$utString" ) } ;
+        or do { diag($@) ; diag( "Bad string (skip encryption test):\n$utString" ) };
   SKIP: {
         # Only check encryption if there's a valid interpretation in
         # the first place, because it ain't going to work otherwise.
         # And the failure above means the whole test is going to be a
         # failure anyway.
-        skip 'UsernameToken is illegible' => 4 unless $p ;
+        skip 'UsernameToken is illegible' => 4 unless $p;
 
-        checkEncryption( $p, $t->{nonce}, $password, $explain ) ;
-    } ;
+        checkEncryption($p, $t->{nonce}, $password, $explain);
+    };
 }
 
 
@@ -67,23 +79,24 @@ foreach my $t (@testCases) {
 # This method always runs four tests.  Probably, this should just
 # become a subtest; then we could remove the "free pass"
 sub checkEncryption {
-    my ($un, $nonce, $password, $explain) = @_ ;
+    my ($un, $nonce, $password, $explain) = @_;
 
-    $nonce ||= '' ;
+    $nonce ||= '';
     if( $nonce ) {
-        my $enc = $un->{wsse_Nonce}->{_} ;
-        ok( $enc, 'Nonce is required and present' ) ;
-        is( decode_base64( $enc ), $nonce, 'Nonce decodes correctly' )
+        my $enc = $un->{wsse_Nonce}{_};
+        ok( $enc, 'Nonce is required and present' );
+        is( decode_base64($enc), $nonce, 'Nonce decodes correctly' )
     }
     else {
-        ok( ! $un->{wsse_Nonce}, 'Nonce is appropriately absent' ) ;
-        ok( 1, 'Free pass, to make the test-counts balance' ) ;
+        ok( ! $un->{wsse_Nonce}, 'Nonce is appropriately absent' );
+        ok( 1, 'Free pass, to make the test-counts balance' );
     }
 
-    ok( $un->{wsu_Created}->{_}, "Created is present, $explain" ) ;
-        # or diag( Data::Dumper->Dump( [$un], ['usernametoken'] ) ) ;
-    my $plainPassword = join( '', $nonce, $un->{wsu_Created}->{_}, $password ) ;
+    ok( $un->{wsu_Created}{_}, "Created is present, $explain" );
+        # or diag( Data::Dumper->Dump( [$un], ['usernametoken'] ) );
+    my $plainPassword = join '', $nonce, $un->{wsu_Created}{_}, $password;
 
-    is( sha1_base64(encode( utf8 => $plainPassword )) . '=', $un->{wsse_Password}->{_},
-        "Password is encrypted correctly, $explain" ) ;
+#warn "$plainPassword";
+    is(sha1_base64(encode utf8 => $plainPassword).'=', $un->{wsse_Password}{_},
+        "Password is encrypted correctly, $explain" );
 }

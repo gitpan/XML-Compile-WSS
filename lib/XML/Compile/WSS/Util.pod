@@ -26,13 +26,22 @@ Export TAG C<:wss11> exports constants
 
   WSS_11   WSSE_10      DSIG_NS      DSIG11_NS    GHC_NS
   WSU_10   WSS11MODULE  DSIG_MORE_NS XENC_NS      DSP_NS
+  WSM_10   XTP_10
 
 =pod
 
-Export tag C<:wsse> defines convenient constants in the wsse namespace.
+Export tag C<:xtp10> defines convenient constants in the x509 namespace. See
 F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0.pdf>
 
-  WSSE_NS  WSSE_BASE64  WSSE_X509v3  WSSE_X509PKI  WSSE_X509PKC
+  XTP10_X509   XTP10_X509v3   XTP10_X509PKI   XTP10_X509PKC
+
+=pod
+
+Export tag C<:wsm10> defines convenient constants in the soap-messages
+namespace.  See
+F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0.pdf >
+
+  WSM10_BASE64
 
 =pod
 
@@ -126,8 +135,8 @@ F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 0.911,
-built on September 01, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.00,
+built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

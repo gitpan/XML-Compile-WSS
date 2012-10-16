@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 use XML::Compile::WSDL11 ;
 use XML::Compile::SOAP::WSS ;
@@ -14,4 +14,6 @@ my $wss  = XML::Compile::SOAP::WSS->new( version => 1.1, schema => $wsdl);
 ok($wss, 'Created a WSS object');
 my $sec  = $wss->wsseBasicAuth( 'foo', 'bar', UTP11_PDIGEST);
 ok($sec, '#PasswordDigest returns something sensible');
-
+my ($type, $xml) = %$sec;
+isa_ok($xml, 'XML::LibXML::Element');
+#warn $xml->toString(1);

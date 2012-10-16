@@ -1,0 +1,329 @@
+=head1 NAME
+
+XML::Compile::WSS::Signature - WSS in CICS-TS style
+
+=head1 INHERITANCE
+
+ XML::Compile::WSS::Signature
+   is a XML::Compile::WSS
+
+=head1 SYNOPSIS
+
+ my $wss  = XML::Compile::WSS::Signature->new
+    ( ... some required params, see below
+    );
+
+B<WARNING: under development!>
+
+=head1 DESCRIPTION
+
+The generic Web Service Security protocol is implemented by the super
+class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements Signatures.
+
+Limitations:
+
+=over 4
+
+=item * digests
+
+Only digest algorithms which are provided via the Digest module are
+supported for the elements to be signed.
+
+=item * signatures
+
+Only a limited subset of signing (algoritm, hash) combinations are
+supported.  Lower on this page, you find details about each of the
+provided signing implementations.
+
+=back
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item XML::Compile::WSS::Signature-E<gt>B<new>(OPTIONS)
+
+ -Option         --Defined in     --Default
+  canon_method                      C14N_EXC_NO_COMM
+  digest_method                     DSIG_SHA1
+  prefix_list                       [ds wsu xenc SOAP-ENV]
+  private_key                       undef
+  public_key                        <depends on sign_method>
+  public_key_type                   <depends on sign_method>
+  public_key_uri                    '#public-key'
+  publish_pubkey                    'INCLUDE_BY_REF'
+  schema           XML::Compile::WSS  undef
+  sign_method                       DSIG_RSA_SHA1
+  version          XML::Compile::WSS  undef
+  wss_version      XML::Compile::WSS  '1.1'
+
+=over 2
+
+=item canon_method => CANON
+
+The algorithm to be used for canonicalization of some component.
+These constants are pre-defined with nice C<C14N_*> names in
+L<XML::Compile::C14N::Util|XML::Compile::C14N::Util>.
+
+=item digest_method => DIGEST
+
+The algorithm used to sign the body digest, when sending.  The digest
+name is an ugly constant which has a nice C<DSIG_*> alias defined
+in L<XML::Compile::WSS::Util|XML::Compile::WSS::Util>.
+
+=item prefix_list => ARRAY
+
+=item private_key => OBJECT|STRING|FILENAME
+
+The exact features of this option depend on the sign_method.  Usually,
+you can specify an OBJECT which contains the key, or STRING or FILENAME
+to create such an object.
+
+=item public_key => OBJECT|STRING|FILENAME
+
+In some cases, the public key can be derived from the private key.
+
+=item public_key_type => KEYTYPE
+
+The KEYTYPE must be specified in the SignedInfo.  It depends on the
+C<sign_method> which default is taken.
+
+=item public_key_uri => STRING
+
+=item publish_pubkey => 'INCLUDE_BY_REF'|CODE
+
+How to publish the public key.  The C<INCLUDE_BY_REF> constant (currently
+the only one supported) will add the key as BinarySecurityToken in the message,
+plus a keyinfo structure with a reference to that token.
+
+=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
+
+=item sign_method => SIGN
+
+=item version => STRING
+
+=item wss_version => '1.1'|MODULE
+
+=back
+
+=back
+
+=head2 Attributes
+
+=over 4
+
+=item $obj-E<gt>B<schema>()
+
+See L<XML::Compile::WSS/"Attributes">
+
+=item $obj-E<gt>B<version>()
+
+See L<XML::Compile::WSS/"Attributes">
+
+=back
+
+=head2 Internals
+
+=over 4
+
+=item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
+
+See L<XML::Compile::WSS/"Internals">
+
+=item XML::Compile::WSS::Signature-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+
+See L<XML::Compile::WSS/"Internals">
+
+=back
+
+=head2 SEE ALSO
+
+=head2 Digests
+
+=over 4
+
+=item $obj-E<gt>B<defaultDigestMethod>()
+
+Returns the default DIGEST constant, as set with L<new(digest_method)|XML::Compile::WSS::Signature/"Constructors">.
+
+This must be a full constant name, as provided by L<XML::Compile::WSS::Util|XML::Compile::WSS::Util>.
+They are listed under export tags C<:dsig> and C<:dsigm>.
+
+=item $obj-E<gt>B<digest>(DIGEST, TEXTREF)
+
+Digest the text (passed as TEXTREF for reasons of performance) into
+a binary string.
+
+=back
+
+=head2 Canonicalization
+
+=over 4
+
+=item $obj-E<gt>B<canon>([CANON])
+
+Returns information about canonicalization method CANON.  By default
+the algoritm of L<defaultCanonMethod()|XML::Compile::WSS::Signature/"Canonicalization">.
+
+=item $obj-E<gt>B<defaultCanonMethod>()
+
+Returns the default Canonicalization method as constant.
+
+=item $obj-E<gt>B<prefixList>()
+
+Returns an ARRAY with the prefixes to be used in canonicalization.
+
+=back
+
+=head2 KeyInfo
+
+=head2 Signing
+
+=over 4
+
+=item $obj-E<gt>B<elementsToSign>()
+
+=item $obj-E<gt>B<signElement>(NODE, OPTIONS)
+
+ -Option--Default
+  id      unique
+
+=over 2
+
+=item id => LABEL
+
+=back
+
+=item $obj-E<gt>B<signMethod>()
+
+=back
+
+=head1 DETAILS
+
+=head2 Signing, the generic part
+
+The base of this whole security protocol is crypto-signing the messages,
+so you will always need to specify some parameters for L<new()|XML::Compile::WSS::Signature/"Constructors">.
+
+  my $wss  = XML::Compile::WSS::Signature->new
+    ( sign_method => DSIG_$algo
+    , ...parameters for $algo...
+    );
+
+When the algorithm is known (see the next sections of this chapter),
+then the parameters will be used to produce the CODE which will do the
+signing.
+
+=head2 Signing with RSA
+
+=head3 Limitations
+
+The signing algorithm uses Crypt::OpenSSL::RSA.  According to its
+manual-page, the current implementation is limited to 
+
+=over 4
+
+=item * sign_method
+
+   DSIG_RSA_SHA1     DSIGM_RSA_MD5     DSIGM_RSA_SHA256
+   DSIGM_RSA_SHA384  DSIGM_RSA_SHA512
+
+It could support some RSA_RIPEMD160, however there is no official
+constant for that in the standards.
+
+=item * public_key_type
+
+  XTP10_X509         XTP10_X509PKI
+
+=back
+
+=head3 Usages
+
+Example:
+
+  my $wss  = XML::Compile::WSS::Signature->new
+     ( sign_method     => DSIG_RSA_SHA1
+     , private_key     => $privkey
+     , public_key_type => XTP10_X509       # default
+     , public_key      => $pubkey          # default from $privkey
+     , public_key_uri  => '#public-key'    # default
+     , publish_pubkey  => 'INCLUDE_BY_REF' # default
+     );
+
+=head3 Private key
+
+You have to provide the private key. There are various ways to do that.
+Valid values for C<$privkey> in above example:
+
+=over 4
+
+=item a Crypt::OpenSSL::RSA object
+
+containing the private key, for instance created via its
+C<new_private_key()> method.
+
+=item a filename
+
+The private key is read from the FILENAME. Typically, the filename
+ends on ".pem".
+
+=item a string
+
+The private key is provided as string, formatted the same way as a PEM
+file looks.
+
+=back
+
+=head3 Public key
+
+With C<public_key_type>, you specify the format of the public key.  By
+default, the C<XTP10_X509> is taken.  You may also specify other C<XTP10_*>
+constants L<XML::Compile::WSS::Util|XML::Compile::WSS::Util> tag-group C<:xtp10>.
+
+For the C<public_key>, you have the same options as for the C<private_key>
+option, although the object is created with new_public_key this time.
+If the $pubkey is not provided, the $privkey object is used.
+
+The C<publish_pubkey> can be a prefined constant or a CODE reference. This
+function will be called then the C<wsse:Security> structure is being
+constructed.  It puts the public key information in the right Perl
+structure to be translated into XML automatically.  The only defined
+constant is C<INCLUDE_BY_REF>.
+
+=head1 SEE ALSO
+
+This module is part of XML-Compile-WSS distribution version 1.00,
+built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+
+Other distributions in this suite:
+L<XML::Compile>,
+L<XML::Compile::SOAP>,
+L<XML::Compile::SOAP12>,
+L<XML::Compile::SOAP::Daemon>,
+L<XML::Compile::SOAP::WSA>,
+L<XML::Compile::C14N>,
+L<XML::Compile::WSS>,
+L<XML::Compile::Tester>,
+L<XML::Compile::Cache>,
+L<XML::Compile::Dumper>,
+L<XML::Compile::RPC>,
+L<XML::Rewrite>,
+L<XML::eXistDB>,
+and
+L<XML::LibXML::Simple>.
+
+Please post questions or ideas to the mailinglist at
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
+For live contact with other developers, visit the C<#xml-compile> channel
+on C<irc.perl.org>.
+
+=head1 LICENSE
+
+Copyrights 2011-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
