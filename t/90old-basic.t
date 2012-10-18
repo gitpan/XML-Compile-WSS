@@ -9,7 +9,7 @@ use XML::Compile::SOAP::WSS ;
 use XML::Compile::WSS::Util qw/:wss11 :utp11/ ;
 
 ## How to get a relative path right??
-my $wsdl = XML::Compile::WSDL11->new( 'examples/wsse/example.wsdl') ;
+my $wsdl = XML::Compile::WSDL11->new('t/example.wsdl') ;
 my $wss  = XML::Compile::SOAP::WSS->new( version => 1.1, schema => $wsdl);
 ok($wss, 'Created a WSS object');
 my $sec  = $wss->wsseBasicAuth( 'foo', 'bar', UTP11_PDIGEST);

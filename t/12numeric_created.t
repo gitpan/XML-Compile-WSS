@@ -22,7 +22,7 @@ use XML::Compile::WSS::BasicAuth;
 
 my ($username, $password) = qw/username password/;
 
-my $wsdl = XML::Compile::WSDL11->new( 'examples/wsse/example.wsdl');
+my $wsdl = XML::Compile::WSDL11->new('t/example.wsdl');
 
 my $now   = time();
 my $nonce = 'insecure';
@@ -50,7 +50,7 @@ foreach my $t (@testCases)
       );
 
     my $doc  = XML::LibXML::Document->new('1.0', 'UTF-8');
-    my $data = $wss->process($doc, {});
+    my $data = $wss->create($doc, {});
     my ($type, $xml) = %$data;
 
     ok($xml, "PasswordDigest returns something sensible, $explain");

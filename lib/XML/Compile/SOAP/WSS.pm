@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::WSS;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use base 'XML::Compile::SOAP::Extension';
 
@@ -32,9 +32,10 @@ sub init($)
 sub wsdl11Init($$)
 {   my ($self, $wsdl, $args) = @_;
     $self->SUPER::wsdl11Init($wsdl, $args);
+
     $self->{XCSW_schema} = $wsdl;
-    # [1.0] wsse needed for backward compat functions
-    $wsdl->prefixes('SOAP-ENV' => SOAP11ENV, wsse => WSSE_10);
+    XML::Compile::WSS->loadSchemas($wsdl, '1.1');
+
     $self;
 }
 
@@ -98,8 +99,7 @@ sub signature(%)
       , after    => sub {
           my ($doc, $xml) = @_;
           $xml->setNamespace(SOAP11ENV, 'SOAP-ENV', 0);
-          $sig->signElement($xml, id => 'TheBody');
-          $xml;
+          $sig->signElement($xml, id => 'TheBody');  # returns a fixed elem
      }};
     $schema->declare(WRITER => 'SOAP-ENV:Envelope', hooks => $sign_body);
 
@@ -110,8 +110,7 @@ sub signature(%)
      +{ type     => 'SOAP-ENV:Body'
       , before => sub {
           my ($node, $path) = @_;
-          $sig->checkDigest($node);
-          $node;
+          $sig->checkElement($node);
       }};
     $schema->declare(READER => 'SOAP-ENV:Envelope', hooks => $check_body);
 
@@ -136,7 +135,7 @@ sub wsseBasicAuth($$$@)
       );
 
    my $doc  = XML::LibXML::Document->new('1.0', 'UTF-8');
-   $auth->process($doc, {});
+   $auth->create($doc, {});
 }
 
 # [1.0] Expired interface
@@ -155,7 +154,7 @@ sub wsseTimestamp($$$@)
       );
 
    my $doc  = XML::LibXML::Document->new('1.0', 'UTF-8');
-   $ts->process($doc, {});
+   $ts->create($doc, {});
 }
  
 

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Timestamp;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use base 'XML::Compile::WSS';
 
@@ -58,7 +58,7 @@ sub _hook_WSU_ID
     my $node = $r->($doc, $values);
     if($id)
     {   $node->setNamespace(WSU_10, 'wsu', 0);
-        $node->setAttributeNS(WSU_10, 'Id' => $id);
+        $node->setAttributeNS(WSU_10, Id => $id);
     }
     $node;
 }
@@ -85,7 +85,7 @@ sub prepareWriting($)
     };
 }
 
-sub process($$)
+sub create($$)
 {   my ($self, $doc, $data) = @_;
     $self->{XCWT_stamp}->($doc, $data);
 }

@@ -9,6 +9,9 @@ XML::Compile::WSS::BasicAuth - username/password security
 
 =head1 SYNOPSIS
 
+ # you may need a few of these
+ use XML::Compile::WSS::Util  qw/:utp11/;
+
  # used in combination with anything
  my $auth = XML::Compile::WSS::BasicAuth->new
    ( schema   => $anything
@@ -26,7 +29,11 @@ XML::Compile::WSS::BasicAuth - username/password security
 =head1 DESCRIPTION
 
 The generic Web Service Security protocol is implemented by the super
-class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements basic authentication.
+class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements "basic authentication",
+i.e. username/password validation.
+
+You can best use digested passwords (UTP11_PDIGEST)  In that case,
+a timestamp, a nonce and SHA1 hashing will keep the password a secret.
 
 =head1 METHODS
 
@@ -51,21 +58,15 @@ class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements basic a
 
 =item created => DATETIME
 
-See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Internals"> for choices of DATETIME.
+See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Helpers"> for choices of DATETIME.
 
 =item nonce => STRING|CODE|'RANDOM'
 
-Only used then the password is passed as digest.  This will cause an
-extra child to be added to the C<UsernameToken>, namely
+Only used then the password is passed as digest.  This will cause the
+C<wsse:Nonce> element.
 
-  <wsse:Nonce>$enc</wsse:Nonce>
-
-where C<$enc> is the base64-encoding of the STRING.  The STRING will
-be prepended to the password (and to any "created" information) before
-the digest is computed to make each digest unique.
-
-When you pass a CODE, it will get called for each message to produce
-a STRING. The constant text 'RANDOM' will have a random nonce generator
+When you pass a CODE, it will get called for each message to produce a
+STRING. The constant text 'RANDOM' will have a random nonce generator
 being called at each message.
 
 =item password => STRING
@@ -77,7 +78,7 @@ If PTWTYPE IS C<UTP11_PDIGEST>, the plain-text password will be
 encrypted with SHA1.  The OPTIONS can be used to salt the digest
 with "nonce" and/or "created" information before the encryption.
 
-=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
+=item schema => an L<XML::Compile::Cache|XML::Compile::Cache> object
 
 =item username => STRING
 
@@ -117,13 +118,19 @@ See L<XML::Compile::WSS/"Attributes">
 
 =back
 
-=head2 Internals
+=head2 Helpers
 
 =over 4
 
 =item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
 
-See L<XML::Compile::WSS/"Internals">
+See L<XML::Compile::WSS/"Helpers">
+
+=back
+
+=head2 Internals
+
+=over 4
 
 =item XML::Compile::WSS::BasicAuth-E<gt>B<loadSchemas>(SCHEMA, VERSION)
 
@@ -131,12 +138,10 @@ See L<XML::Compile::WSS/"Internals">
 
 =back
 
-=head2 SEE ALSO
-
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.00,
-built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.01,
+built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -9,18 +9,37 @@ XML::Compile::WSS::Signature - WSS in CICS-TS style
 
 =head1 SYNOPSIS
 
- my $wss  = XML::Compile::WSS::Signature->new
-    ( ... some required params, see below
-    );
-
 B<WARNING: under development!>
+
+ # You may need a few of these
+ use XML::Compile::WSS::Util  qw/:dsig/;
+ use XML::Compile::C14N::Util qw/:c14n/;
+
+ # This modules van be used "stand-alone" ...
+ my $schema = XML::Compile::Cache->new(...);
+ my $sig    = XML::Compile::WSS::Signature->new
+   (sign_method => DSGIG_RSA_SHA1, ...);
+
+ # ... or as SOAP slave (strict order of object creation!)
+ my $wss    = XML::Compile::SOAP::WSS->new;
+ my $wsdl   = XML::Compile::WSDL11->new($wsdlfn);
+ my $sig    = $wss->signature(sign_method => ...);
 
 =head1 DESCRIPTION
 
 The generic Web Service Security protocol is implemented by the super
-class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements Signatures.
+class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements cypto signatures.
 
-Limitations:
+One or more elements of the document can be selected to be signed (with
+L<signElement()|XML::Compile::WSS::Signature/"Signing">)  They are canonalized (serialized in a well-described
+way) and then digested (usually via SHA1).  The digest is put in a
+C<SignedInfo> component of the C<Signature> feature in the C<Security>
+header.  When all digests are in place, the whole SignedInfo structure
+
+=head2 Limitations
+
+Many companies have their own use of the pile of standards for this
+feature.  Some of the resulting limitations are known by the author:
 
 =over 4
 
@@ -75,6 +94,8 @@ in L<XML::Compile::WSS::Util|XML::Compile::WSS::Util>.
 
 =item prefix_list => ARRAY
 
+Used for canonicalization.
+
 =item private_key => OBJECT|STRING|FILENAME
 
 The exact features of this option depend on the sign_method.  Usually,
@@ -98,9 +119,12 @@ How to publish the public key.  The C<INCLUDE_BY_REF> constant (currently
 the only one supported) will add the key as BinarySecurityToken in the message,
 plus a keyinfo structure with a reference to that token.
 
-=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
+=item schema => an L<XML::Compile::Cache|XML::Compile::Cache> object
 
 =item sign_method => SIGN
+
+The choices here are explained below, in the L</DETAILS> section of
+this manual page.
 
 =item version => STRING
 
@@ -124,23 +148,17 @@ See L<XML::Compile::WSS/"Attributes">
 
 =back
 
-=head2 Internals
+=head2 Helpers
 
 =over 4
 
 =item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
 
-See L<XML::Compile::WSS/"Internals">
-
-=item XML::Compile::WSS::Signature-E<gt>B<loadSchemas>(SCHEMA, VERSION)
-
-See L<XML::Compile::WSS/"Internals">
+See L<XML::Compile::WSS/"Helpers">
 
 =back
 
-=head2 SEE ALSO
-
-=head2 Digests
+=head3 Digest
 
 =over 4
 
@@ -158,7 +176,7 @@ a binary string.
 
 =back
 
-=head2 Canonicalization
+=head3 Canonicalization
 
 =over 4
 
@@ -177,22 +195,41 @@ Returns an ARRAY with the prefixes to be used in canonicalization.
 
 =back
 
-=head2 KeyInfo
+=head3 KeyInfo
 
-=head2 Signing
+=head3 Signing
 
 =over 4
 
+=item $obj-E<gt>B<checkElement>(ELEMENT)
+
+Register the ELEMENT to be checked for correct signature.
+
+=item $obj-E<gt>B<elementsToCheck>()
+
+Returns a HASH with (wsu-id, node) pairs to be checked.  The administration
+is reset with this action.
+
 =item $obj-E<gt>B<elementsToSign>()
 
+Returns an ARRAY of all NODES which need to be signed.  This will
+also reset the administration.
+
 =item $obj-E<gt>B<signElement>(NODE, OPTIONS)
+
+Add an element to be the list of NODEs to be signed.  For instance,
+the SOAP message will register the C<SOAP-ENV:Body> here.
 
  -Option--Default
   id      unique
 
 =over 2
 
-=item id => LABEL
+=item id => UNIQUEID
+
+Each element to be signed needs a C<wsu:Id> to refer to.  If the NODE
+does not have one, the specified UNIQUEID is taken.  If there is none
+specified, one is generated.
 
 =back
 
@@ -200,7 +237,19 @@ Returns an ARRAY with the prefixes to be used in canonicalization.
 
 =back
 
+=head2 Internals
+
+=over 4
+
+=item XML::Compile::WSS::Signature-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+
+See L<XML::Compile::WSS/"Internals">
+
+=back
+
 =head1 DETAILS
+
+=head2 Specifications
 
 =head2 Signing, the generic part
 
@@ -294,8 +343,8 @@ constant is C<INCLUDE_BY_REF>.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.00,
-built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.01,
+built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -1,6 +1,21 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.01: Thu Oct 18 02:49:30 CEST 2012
+
+	Fixes:
+
+	- need for strict order for creation of (at least one) features
+	  before compileClient() removed.  Noted by [Cale Cushing]
+	  
+	Improvements:
+
+	- many documentation improvements.
+
+	- signature: less namespace declarations.
+
+	- removed examples: they are outdated.
+
 version 1.00: Tue Oct 16 16:50:10 CEST 2012
 
 	Changes:

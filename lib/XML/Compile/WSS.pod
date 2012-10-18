@@ -26,8 +26,8 @@ XML::Compile::WSS - OASIS Web Services Security
 The Web Services Security working group of W3C develops a set of
 standards which add signatures and encryption to XML.
 
-In its current status, this module supports the following records in
-the C<Security> header:
+In its current status, this module implements features in the C<Security>
+header.  One header may contain more than one of these:
 
 =over 4
 
@@ -37,10 +37,13 @@ the C<Security> header:
 
 =item * signing of the body in L<XML::Compile::WSS::Signature|XML::Compile::WSS::Signature>
 
+=item * encryption is not yet supported.  Please hire me to get it implemented.
+
 =back
 
-Encryption is not yet supported.  Please hire me to get it implemented.
 You will certainly need the constants from L<XML::Compile::WSS::Util|XML::Compile::WSS::Util>.
+Besides, when you want to use Security with SOAP, then use
+L<XML::Compile::SOAP::WSS|XML::Compile::SOAP::WSS>.
 
 =head1 METHODS
 
@@ -57,7 +60,7 @@ You will certainly need the constants from L<XML::Compile::WSS::Util|XML::Compil
 
 =over 2
 
-=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
+=item schema => an L<XML::Compile::Cache|XML::Compile::Cache> object
 
 Add the WSS extension information to the provided schema.  If not used,
 you have to call L<loadSchemas()|XML::Compile::WSS/"Internals"> before compiling readers and writers.
@@ -89,7 +92,7 @@ Returns the version number.
 
 =back
 
-=head2 Internals
+=head2 Helpers
 
 =over 4
 
@@ -118,6 +121,12 @@ example:
   # No ValueType added
   Created => 'this Christmas'
 
+=back
+
+=head2 Internals
+
+=over 4
+
 =item XML::Compile::WSS-E<gt>B<loadSchemas>(SCHEMA, VERSION)
 
 SCHEMA must extend L<XML::Compile::Cache|XML::Compile::Cache>.
@@ -128,39 +137,46 @@ C<allow_undeclared> flag will be set. Also, C<any_element> will be set to
 
 =back
 
-=head2 SEE ALSO
+=head1 DETAILS
+
+=head2 Specifications
+
+A huge number of specifications act in this field.  Every self respecting
+company has contributed its own implementation into the field.  A lot of
+this is B<not supported>, but the list of constants should be complete
+in L<XML::Compile::WSS::Util|XML::Compile::WSS::Util>.
 
 =over 4
 
-=item XML Security Generic Hybrid Ciphers
+=item * XML Security Generic Hybrid Ciphers
 
 F<http://www.w3.org/TR/2011/CR-xmlsec-generic-hybrid-20110303/>, 3 March 2011
 
-=item XML Signature Properties
+=item * XML Signature Properties
 
 F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>, 3 March 2011
 
-=item XML Signature Syntax and Processing Version 1.1
+=item * XML Signature Syntax and Processing Version 1.1
 
 F<http://www.w3.org/TR/2011/CR-xmldsig-core1-20110303/>, 3 March 2011
 
-=item SOAP message security
+=item * SOAP message security
 
 F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0.pdf>, March 2004
 
-=item XML Signature Syntax and Processing (Second Edition)
+=item * XML Signature Syntax and Processing (Second Edition)
 
 F<http://www.w3.org/TR/2008/REC-xmldsig-core-20080610/>, 10 June 2008
 
-=item RFC4050 Using the ECDSA for XML Digital Signatures
+=item * RFC4050 Using the ECDSA for XML Digital Signatures
 
 F<http://www.ietf.org/rfc/rfc4050.txt>, april 2005
 
-=item RFC4051 Additional XML Security Uniform Resource Identifiers (URIs)
+=item * RFC4051 Additional XML Security Uniform Resource Identifiers (URIs)
 
 F<http://www.ietf.org/rfc/rfc4051.txt>, april 2005
 
-=item XML Encryption Syntax and Processing
+=item * XML Encryption Syntax and Processing
 
 F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>, 10 December 2002
 
@@ -168,8 +184,8 @@ F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>, 10 December 2002
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.00,
-built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.01,
+built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

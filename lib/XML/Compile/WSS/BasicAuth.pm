@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::BasicAuth;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use base 'XML::Compile::WSS';
 
@@ -128,7 +128,7 @@ sub prepareWriting($)
     };
 }
 
-sub process($$)
+sub create($$)
 {   my ($self, $doc, $data) = @_;
     $self->{XCWB_login}->($doc, $data);
 }

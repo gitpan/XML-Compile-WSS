@@ -1,7 +1,4 @@
 #!/usr/bin/env perl
-#
-# Basically just ensure that examples/usertoken/with_help_digest.pl will work.
-#
 use warnings;
 use strict;
 
@@ -23,7 +20,7 @@ my $usernameId  = 'foo';
 my $timestampId = 'baz';
 
 ## How to get a relative path right??
-my $wsdl = XML::Compile::WSDL11->new('examples/wsse/example.wsdl');
+my $wsdl = XML::Compile::WSDL11->new('t/example.wsdl');
 my $wss  = XML::Compile::SOAP::WSS->new(version => 1.1, schema => $wsdl);
 ok($wss, 'Created a WSS object');
 

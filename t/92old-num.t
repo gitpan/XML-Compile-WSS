@@ -22,11 +22,11 @@ use XML::Compile::WSS::Util qw/:utp11/;
 
 my ($username, $password) = qw/username password/;
 
-my $wsdl = XML::Compile::WSDL11->new( 'examples/wsse/example.wsdl');
-my $wss  = XML::Compile::SOAP::WSS->new( version => 1.1, schema => $wsdl);
+my $wsdl     = XML::Compile::WSDL11->new('t/example.wsdl');
+my $wss      = XML::Compile::SOAP::WSS->new(version => 1.1, schema => $wsdl);
 
-my $now = time() ;
-my $nonce = 'insecure' ;
+my $now      = time() ;
+my $nonce    = 'insecure' ;
 
 my $untype   = $wss->schema->findName('wsse:UsernameToken');
 my $unreader = $wss->schema->reader($untype) ;

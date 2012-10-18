@@ -41,6 +41,7 @@ t/12numeric_created.t
 t/90old-basic.t
 t/91old-digest.t
 t/92old-num.t
+t/example.wsdl
 xt/99pod.t
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

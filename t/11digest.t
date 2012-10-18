@@ -28,7 +28,9 @@ my $then    = '2012-08-17T12:02:31Z';
 #my $then = $now + 30;
 
 my $wss     = XML::Compile::SOAP::WSS->new;
-my $wsdl    = XML::Compile::WSDL11->new('examples/wsse/example.wsdl');
+my $wsdl    = XML::Compile::WSDL11->new('t/example.wsdl');
+
+my $getVersion = $wsdl->compileClient($operation, transport_hook => \&test_server);
 
 my $auth = $wss->basicAuth
   ( username => $username
@@ -47,12 +49,14 @@ my $ts = $wss->timestamp
   );
 ok($auth, 'Created Timestamping object');
 
+=pod
 my $getVersion = $wsdl->compileClient
   ( $operation
 
   # to overrule server as in wsdl, for testing only
-    , transport_hook => \&test_server
+  , transport_hook => \&test_server
   );
+=cut
 
 ok($getVersion, "$operation compiled with test server");
 my $theCorrectAnswer = 42;

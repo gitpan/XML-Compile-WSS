@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Util;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 use base 'Exporter';
 

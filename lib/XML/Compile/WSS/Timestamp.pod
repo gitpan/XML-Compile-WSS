@@ -47,14 +47,16 @@ record.
 
 =over 2
 
-=item created => DATE|TIME|''
+=item created => DATETIME
 
 By default, for each constructed message the current time is taken.
-See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Internals"> for options on DATETIME.
+See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Helpers"> for options on DATETIME.  If you
+specify an empty string, then the C<Created> node will be skipped.
 
 =item expires => DATETIME
 
-See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Internals"> for options on DATETIME.
+See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Helpers"> for options on DATETIME.  When
+not defined, the C<Expires> node will be skipped.
 
 =item lifetime => SECONDS
 
@@ -62,7 +64,7 @@ When C<lifetime> is given and no C<expires>, then the expiration will
 be set to the C<created> time plus this lifetime.  In this case, the
 created time cannot be specified as formatted DATE.
 
-=item schema => L<XML::Compile::Cache|XML::Compile::Cache>
+=item schema => an L<XML::Compile::Cache|XML::Compile::Cache> object
 
 =item version => STRING
 
@@ -102,13 +104,19 @@ See L<XML::Compile::WSS/"Attributes">
 
 =back
 
-=head2 Internals
+=head2 Helpers
 
 =over 4
 
 =item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
 
-See L<XML::Compile::WSS/"Internals">
+See L<XML::Compile::WSS/"Helpers">
+
+=back
+
+=head2 Internals
+
+=over 4
 
 =item XML::Compile::WSS::Timestamp-E<gt>B<loadSchemas>(SCHEMA, VERSION)
 
@@ -116,12 +124,10 @@ See L<XML::Compile::WSS/"Internals">
 
 =back
 
-=head2 SEE ALSO
-
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.00,
-built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.01,
+built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

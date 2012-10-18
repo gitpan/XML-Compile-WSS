@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '1.00';
+$VERSION = '1.01';
 
 
 use Log::Report 'xml-compile-wss';
@@ -68,6 +68,8 @@ sub prepare($)
     $self->prepareReading($schema);
     $self;
 }
+sub prepareWriting($) { shift }
+sub prepareReading($) { shift }
 
 #-----------
 
@@ -108,6 +110,7 @@ sub dateTime($)
       };
 }
 
+#-----------
 
 my $schema_loaded = 0;
 sub loadSchemas($$)
@@ -169,27 +172,26 @@ __PATCH
 
     # If we find a wsse_Security which points to a WSS or an ARRAY of
     # WSS, we run all of them.
-    my $process_security =
+    my $create_security =
      +{ type   => 'wsse:SecurityHeaderType'
       , before => sub {
         my ($doc, $from, $path) = @_;
         my $data = {};
         if( UNIVERSAL::isa($from, 'XML::Compile::SOAP::WSS')
          || UNIVERSAL::isa($from, __PACKAGE__))
-             { $from->process($doc, $data) }
+             { $from->create($doc, $data) }
         elsif(ref $from eq 'ARRAY')
-             { $_->process($doc, $data) for @$from }
+             { $_->create($doc, $data) for @$from }
         else { $data = $from }
 
         $data;
     }};
 
-    $schema->declare(WRITER => 'wsse:Security', hooks => $process_security);
+    $schema->declare(WRITER => 'wsse:Security', hooks => $create_security);
     $schema;
 }
 
-sub prepareWriting($) { shift }
-sub prepareReading($) { shift }
+#---------------------------
 
 
 1;

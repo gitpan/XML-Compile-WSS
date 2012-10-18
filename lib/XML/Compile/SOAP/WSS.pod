@@ -38,7 +38,7 @@ L<XML::Compile::WSS|XML::Compile::WSS>. This module integrates WSS in SOAP usage
 This module is an XML::Compile::SOAP::Extension, a plugin for the
 SOAP code.  Some of these protocols implemented with these plugins
 behave badly: interfere with the WSDL specification.  Therefore, these
-B<WSDL plugins> have to be B<instantiated before> the WSDL files get read.
+B<WSDL plugins> have to be B<instantiated before the WSDL> files get read.
 The use of the information can only take place when all schema's are read,
 so these B<security features> can only be B<created after> that.
 
@@ -50,8 +50,8 @@ so these B<security features> can only be B<created after> that.
 
 =item XML::Compile::SOAP::WSS-E<gt>B<new>(OPTIONS)
 
-Usually, you do not call L<new()|XML::Compile::SOAP::WSS/"Constructors"> but one of the specific instantiators.
-Depends of which kind of WSS service you need.
+Usually, you do not call L<new()|XML::Compile::SOAP::WSS/"Constructors"> but one of the specific constructors.
+Depends on the WSS feature you need.
 
 =back
 
@@ -75,16 +75,19 @@ Add a new L<XML::Compile::WSS|XML::Compile::WSS> object to the list of maintaine
 
 =item $obj-E<gt>B<basicAuth>(OPTIONS)
 
+Implements username/password authentication.
 See documentation in L<XML::Compile::WSS::BasicAuth|XML::Compile::WSS::BasicAuth>.  The OPTIONS are
 passed to its new() method.
 
 =item $obj-E<gt>B<signature>(OPTIONS)
 
+Put a crypto signature on one or more elements.
 See documentation in L<XML::Compile::WSS::Signature|XML::Compile::WSS::Signature>.  The OPTIONS are
 passed to its new() method.
 
 =item $obj-E<gt>B<timestamp>(OPTIONS)
 
+Adds a timestamp record to the Security header.
 See documentation in L<XML::Compile::WSS::Timestamp|XML::Compile::WSS::Timestamp>.  The OPTIONS are
 passed to its new() method.
 
@@ -92,8 +95,8 @@ passed to its new() method.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.00,
-built on October 16, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.01,
+built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
