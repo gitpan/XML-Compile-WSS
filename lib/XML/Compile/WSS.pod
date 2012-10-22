@@ -15,11 +15,18 @@ XML::Compile::WSS - OASIS Web Services Security
  my $schema = XML::Compile::Cache->new(...);
  my $auth   = XML::Compile::WSS::BasicAuth->new
    (schema => $schema, username => $user, ...);
+ my $elem   = $auth->create($doc, $data);
 
  # ... or as SOAP slave (strict order of object creation!)
  my $wss    = XML::Compile::SOAP::WSS->new;
  my $wsdl   = XML::Compile::WSDL11->new($wsdlfn);
  my $auth   = $wss->basicAuth(username => $user, ...);
+ my $answer = $wsdl->call($operation, wsse_Security => $auth, %data);
+ # same, because "all" defined is default
+ my $answer = $wsdl->call($operation, %data);
+ # or
+ my $call   = $wsdl->compileClient($operation);
+ my $answer = $call->(%data);
 
 =head1 DESCRIPTION
 
@@ -89,6 +96,24 @@ The only option is currently C<WSS11MODULE>.
 =item $obj-E<gt>B<version>()
 
 Returns the version number.
+
+=back
+
+=head2 Apply
+
+=over 4
+
+=item $obj-E<gt>B<check>(SECURITY)
+
+Check whether received SECURITY information is correct.  Each active
+WSS feature must check whether it finds information for it.
+
+=item $obj-E<gt>B<create>(DOC, SECURITY, DATA)
+
+Adds some WSS element to SECURITY.  The DATA is the structure which
+is passed to some writer (for instance, the DATA which the user
+passes to the SOAP call).  There is quite some flexibility in that
+structure, so should not be used, in general.
 
 =back
 
@@ -184,8 +209,8 @@ F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>, 10 December 2002
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.01,
-built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.02,
+built on October 22, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -104,6 +104,20 @@ See L<XML::Compile::WSS/"Attributes">
 
 =back
 
+=head2 Apply
+
+=over 4
+
+=item $obj-E<gt>B<check>(SECURITY)
+
+See L<XML::Compile::WSS/"Apply">
+
+=item $obj-E<gt>B<create>(DOC, SECURITY, DATA)
+
+See L<XML::Compile::WSS/"Apply">
+
+=back
+
 =head2 Helpers
 
 =over 4
@@ -126,8 +140,8 @@ See L<XML::Compile::WSS/"Internals">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.01,
-built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.02,
+built on October 22, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

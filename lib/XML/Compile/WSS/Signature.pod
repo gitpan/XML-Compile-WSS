@@ -64,19 +64,23 @@ provided signing implementations.
 
 =item XML::Compile::WSS::Signature-E<gt>B<new>(OPTIONS)
 
- -Option         --Defined in     --Default
-  canon_method                      C14N_EXC_NO_COMM
-  digest_method                     DSIG_SHA1
-  prefix_list                       [ds wsu xenc SOAP-ENV]
-  private_key                       undef
-  public_key                        <depends on sign_method>
-  public_key_type                   <depends on sign_method>
-  public_key_uri                    '#public-key'
-  publish_pubkey                    'INCLUDE_BY_REF'
-  schema           XML::Compile::WSS  undef
-  sign_method                       DSIG_RSA_SHA1
-  version          XML::Compile::WSS  undef
-  wss_version      XML::Compile::WSS  '1.1'
+ -Option                --Defined in     --Default
+  canon_method                             C14N_EXC_NO_COMM
+  digest_method                            DSIG_SHA1
+  prefix_list                              [ds wsu xenc SOAP-ENV]
+  private_key                              undef
+  public_key                               <depends on sign_method>
+  public_key_id                            'public-key'
+  public_key_type                          <depends on sign_method>
+  publish_pubkey                           'INCLUDE_BY_REF'
+  remote_pubkey                            undef
+  remote_pubkey_encoding                   undef
+  remote_pubkey_type                       XTP10_X509
+  remote_sign_method                       DSIG_RSA_SHA1
+  schema                  XML::Compile::WSS  undef
+  sign_method                              DSIG_RSA_SHA1
+  version                 XML::Compile::WSS  undef
+  wss_version             XML::Compile::WSS  '1.1'
 
 =over 2
 
@@ -106,18 +110,42 @@ to create such an object.
 
 In some cases, the public key can be derived from the private key.
 
+=item public_key_id => STRING
+
 =item public_key_type => KEYTYPE
 
 The KEYTYPE must be specified in the SignedInfo.  It depends on the
 C<sign_method> which default is taken.
-
-=item public_key_uri => STRING
 
 =item publish_pubkey => 'INCLUDE_BY_REF'|CODE
 
 How to publish the public key.  The C<INCLUDE_BY_REF> constant (currently
 the only one supported) will add the key as BinarySecurityToken in the message,
 plus a keyinfo structure with a reference to that token.
+
+=item remote_pubkey => OBJECT|STRING|FILENAME
+
+To defend against man-in-the-middle attacks, you need to specify the
+server's public key.  When specified, that key will be used to verify
+the signature, not the one listed in the XML response.
+
+Only when this C<remote_pubkey> is specified, we will require the
+signature.  Otherwise, the check of the signature will only be performed
+when a Signature is available in the Security header.
+
+=item remote_pubkey_encoding => ENCODING
+
+Used when C<remote_pubkey> is a STRING or FILENAME.  Usually WSM10_BASE64,
+to indicate that the key is in base64 encoding.  When not defined, the
+key is in binary format.
+
+=item remote_pubkey_type => KEYTYPE
+
+Used when C<remote_pubkey> is a STRING or FILENAME.
+
+=item remote_sign_method => SIGNMETHOD
+
+Used when the C<remote_pubkey> is specified.
 
 =item schema => an L<XML::Compile::Cache|XML::Compile::Cache> object
 
@@ -145,6 +173,20 @@ See L<XML::Compile::WSS/"Attributes">
 =item $obj-E<gt>B<version>()
 
 See L<XML::Compile::WSS/"Attributes">
+
+=back
+
+=head2 Apply
+
+=over 4
+
+=item $obj-E<gt>B<check>(SECURITY)
+
+See L<XML::Compile::WSS/"Apply">
+
+=item $obj-E<gt>B<create>(DOC, SECURITY, DATA)
+
+See L<XML::Compile::WSS/"Apply">
 
 =back
 
@@ -204,6 +246,16 @@ Returns an ARRAY with the prefixes to be used in canonicalization.
 =item $obj-E<gt>B<checkElement>(ELEMENT)
 
 Register the ELEMENT to be checked for correct signature.
+
+=item $obj-E<gt>B<checker>()
+
+When the remote public key is specified explicitly, this will return
+the code-reference to check it received SignedInfo.
+
+=item $obj-E<gt>B<createSignature>(DOCUMENT)
+
+Must be called after all elements-to-be-signed have been created,
+but before the SignedInfo object gets serialized.
 
 =item $obj-E<gt>B<elementsToCheck>()
 
@@ -265,6 +317,26 @@ When the algorithm is known (see the next sections of this chapter),
 then the parameters will be used to produce the CODE which will do the
 signing.
 
+=head2 Defend against man-in-the-middle
+
+The signature can easily be spoofed with a man-in-the-middle attack,
+unless you hard-code the remote's public key.
+
+  my $wss  = XML::Compile::WSS::Signature->new
+    ( ...
+    , remote_sign_method     => DSIG_RSA_SHA1    # default
+    , remote_pubkey_type     => XTP10_X509       # default
+    , remote_pubkey_encoding => WSM10_BASE64
+    , remote_pubkey          => $base64_enc_key_string
+    );
+
+  my $wss  = XML::Compile::WSS::Signature->new
+    ( ...
+    , remote_sign_method     => DSIG_RSA_SHA1    # default
+    , remote_pubkey          => $key
+      # $key is a Crypt::OpenSSL::RSA public key object
+    );
+
 =head2 Signing with RSA
 
 =head3 Limitations
@@ -297,7 +369,7 @@ Example:
      , private_key     => $privkey
      , public_key_type => XTP10_X509       # default
      , public_key      => $pubkey          # default from $privkey
-     , public_key_uri  => '#public-key'    # default
+     , public_key_id   => 'public-key'     # default
      , publish_pubkey  => 'INCLUDE_BY_REF' # default
      );
 
@@ -343,8 +415,8 @@ constant is C<INCLUDE_BY_REF>.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.01,
-built on October 18, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.02,
+built on October 22, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

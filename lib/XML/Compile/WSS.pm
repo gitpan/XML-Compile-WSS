@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '1.01';
+$VERSION = '1.02';
 
 
 use Log::Report 'xml-compile-wss';
@@ -78,20 +78,10 @@ sub schema()  {$schema}
 
 #-----------
 
-# Some elements are allowed to have an Id attribute from the wsu
-# schema, regardless of what the actual schema documents say.  So an
-# attribute "wsu_Id" should get interpreted as such, if the writer
-# has registered this hook.
-sub _hook_WSU_ID
-{   my ($doc, $values, $path, $tag, $r) = @_ ;
-    my $id = delete $values->{wsu_Id};  # remove first, to avoid $r complaining
-    my $node = $r->($doc, $values);
-    if($id)
-    {   $node->setNamespace(WSU_10, 'wsu', 0);
-        $node->setAttributeNS(WSU_10, 'Id' => $id);
-    }
-    $node;
-}
+sub create($$) {shift}
+
+
+sub check($) {shift}
 
 #-----------
 
@@ -108,6 +98,21 @@ sub dateTime($)
      +{ _ => $time
       , ValueType => SCHEMA2001.'/dateTime'
       };
+}
+
+# Some elements are allowed to have an Id attribute from the wsu
+# schema, regardless of what the actual schema documents say.  So an
+# attribute "wsu_Id" should get interpreted as such, if the writer
+# has registered this hook.
+sub _hook_WSU_ID
+{   my ($doc, $values, $path, $tag, $r) = @_ ;
+    my $id = delete $values->{wsu_Id};  # remove first, to avoid $r complaining
+    my $node = $r->($doc, $values);
+    if($id)
+    {   $node->setNamespace(WSU_10, 'wsu', 0);
+        $node->setAttributeNS(WSU_10, 'Id' => $id);
+    }
+    $node;
 }
 
 #-----------
@@ -169,25 +174,6 @@ __PATCH
     $schema->allowUndeclared(1);
     $schema->addCompileOptions(RW => mixed_elements => 'STRUCTURAL');
     $schema->anyElement('ATTEMPT');
-
-    # If we find a wsse_Security which points to a WSS or an ARRAY of
-    # WSS, we run all of them.
-    my $create_security =
-     +{ type   => 'wsse:SecurityHeaderType'
-      , before => sub {
-        my ($doc, $from, $path) = @_;
-        my $data = {};
-        if( UNIVERSAL::isa($from, 'XML::Compile::SOAP::WSS')
-         || UNIVERSAL::isa($from, __PACKAGE__))
-             { $from->create($doc, $data) }
-        elsif(ref $from eq 'ARRAY')
-             { $_->create($doc, $data) for @$from }
-        else { $data = $from }
-
-        $data;
-    }};
-
-    $schema->declare(WRITER => 'wsse:Security', hooks => $create_security);
     $schema;
 }
 

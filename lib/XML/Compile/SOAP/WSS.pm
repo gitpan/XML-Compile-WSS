@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::WSS;
 use vars '$VERSION';
-$VERSION = '1.01';
+$VERSION = '1.02';
 
 use base 'XML::Compile::SOAP::Extension';
 
@@ -35,6 +35,7 @@ sub wsdl11Init($$)
 
     $self->{XCSW_schema} = $wsdl;
     XML::Compile::WSS->loadSchemas($wsdl, '1.1');
+    $wsdl->prefixes('SOAP-ENV' => SOAP11ENV);
 
     $self;
 }
@@ -52,7 +53,27 @@ sub soap11ClientWrapper($$$)
 {   my ($self, $op, $call, $args) = @_;
     # Add empty security object, otherwise hooks will not get called.
     # May get overwritten by user supplied element or sublist of wss's.
-    sub { $call->(wsse_Security => $self->{XCSW_wss}, @_) };
+    sub {
+        my %data = @_;
+        my $sec  = $data{wsse_Security};
+        return $call->(%data)
+            if ref $sec eq 'HASH';
+
+        my $wss  = $sec || $self->{XCSW_wss};
+        my @wss  = ref $wss eq 'ARRAY' ? @$wss : $wss;
+        my $secw = $data{wsse_Security} = {};
+
+        my $doc  = $data{_doc} ||= XML::LibXML::Document->new('1.0','UTF-8');
+        $_->create($doc, $secw) for @wss;
+ 
+        my ($answer, $trace) = $call->(%data);
+        if(defined $answer)
+        {   my $secr = $answer->{wsse_Security} ||= {};
+            $_->check($secr) for @wss;
+        }
+ 
+        wantarray ? ($answer, $trace) : $answer;
+    };
 }
 
 #---------------------------
@@ -98,16 +119,19 @@ sub signature(%)
      +{ type     => 'SOAP-ENV:Body'
       , after    => sub {
           my ($doc, $xml) = @_;
-          $xml->setNamespace(SOAP11ENV, 'SOAP-ENV', 0);
+
+          # This is called twice, caused by the trick to get first the
+          # body than the header processed when writing an envelope.
+          # The second time, the signature element is already prepared,
+          # no signing skipped.
           $sig->signElement($xml, id => 'TheBody');  # returns a fixed elem
+          $sig->createSignature($doc);
+          $xml;
      }};
     $schema->declare(WRITER => 'SOAP-ENV:Envelope', hooks => $sign_body);
 
-    # We can only sign then all prefixes in Body are declared in Body
-    $schema->declare(WRITER => 'SOAP-ENV:Body', include_namespaces => 1);
-
     my $check_body =
-     +{ type     => 'SOAP-ENV:Body'
+     +{ type   => 'SOAP-ENV:Body'
       , before => sub {
           my ($node, $path) = @_;
           $sig->checkElement($node);

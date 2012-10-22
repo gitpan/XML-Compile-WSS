@@ -1,6 +1,19 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.02: Mon Oct 22 11:17:34 CEST 2012
+
+	Fixes:
+
+	- when not using SOAP, then you call create() or check() explicitly.
+
+	- completion of Signature implementation (no real-life testing,
+	  but eats its own food, at least)
+
+	Improvements:
+
+	- added regression test for signatures in t/20*
+
 version 1.01: Thu Oct 18 02:49:30 CEST 2012
 
 	Fixes:

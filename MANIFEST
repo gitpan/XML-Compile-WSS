@@ -38,6 +38,10 @@ t/01use.t
 t/10basic.t
 t/11digest.t
 t/12numeric_created.t
+t/20any.wsdl
+t/20mykey.pem
+t/20mykey.pub
+t/20signature.t
 t/90old-basic.t
 t/91old-digest.t
 t/92old-num.t

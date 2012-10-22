@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Signature;
 use vars '$VERSION';
-$VERSION = '1.01';
+$VERSION = '1.02';
 
 use base 'XML::Compile::WSS';
 
@@ -56,16 +56,17 @@ sub init($)
     my $digest = $self->{XCWS_digmeth}  = $args->{digest_method} || DSIG_SHA1;
     $self->digest($digest, \"test digest");
 
-    my $sign   = $self->{XCWS_signmeth} = $args->{sign_method} || DSIG_RSA_SHA1;
+    my $sign = $self->{XCWS_signmeth} = $args->{sign_method} || DSIG_RSA_SHA1;
     $self->{XCWS_signer}     = $self->_create_signer($sign, $args);
 
-    $self->{XCWS_pubkey_uri} = $args->{public_key_uri} || '#public-key';
+    $self->{XCWS_pubkey_uri} = $args->{public_key_id } || 'public-key';
     $self->{XCWS_publ_key}   = $args->{publish_pubkey} || 'INCLUDE_BY_REF';
 
     $self->{XCWS_canonmeth}  = $args->{canon_method}   || C14N_EXC_NO_COMM;
     $self->{XCWS_prefixlist} = $args->{prefix_list}
                             || [ qw/ds wsu xenc SOAP-ENV/ ];
     $self->{XCWS_to_check}   = {};
+    $self->{XCWS_checker}    = $self->_create_remote_pubkey($args);
     $self;
 }
 
@@ -81,13 +82,24 @@ sub digest($$)
         or error __x"digest {name} is not a correct constant";
     my $algo = uc $1;
 
-    my $digest = try { Digest->new($algo)->add($text)->digest };
+    my $digest = try { Digest->new($algo)->add($$text)->digest };
     $@ and error __x"cannot use digest method {short}, constant {name}: {err}"
       , short => $algo, name => $method, err => $@->wasFatal;
 
     $digest;
 }
 
+sub _digest_elem_check($$)
+{   my ($self, $elem, $ref) = @_;
+    my $transf   = $ref->{ds_Transforms}{ds_Transform}[0]; # only 1 transform
+    my ($inclns, $preflist) = %{$transf->{cho_any}[0]};    # only 1 kv pair
+    my $elem_c14n = $self
+        ->_apply_canon($transf->{Algorithm}, $preflist->{PrefixList})
+        ->($elem);
+
+    my $digmeth = $ref->{ds_DigestMethod}{Algorithm} || '(none)';
+    $self->digest($digmeth, \$elem_c14n) eq $ref->{ds_DigestValue};
+}
 #-----------------------------
 
 
@@ -102,12 +114,19 @@ sub _repair_xml($$)
 {   my ($self, $xc_out_dom) = @_;
 
     # only doc element does charsets correctly
-    my $doc       = $xc_out_dom->ownerDocument;
-    $doc->setDocumentElement($xc_out_dom);
+    my $doc    = $xc_out_dom->ownerDocument;
+
+    # building bottom up: be sure we have all namespaces which may be
+    # declared later, on higher in the hierarchy.
+    my $env    = $doc->createElement('Dummy');
+    my $prefixes = $self->schema->prefixes;
+    $env->setNamespace($_->{uri}, $_->{prefix}, 0)
+        for values %$prefixes;
 
     # reparse tree
-    my $fixed_dom = XML::LibXML->load_xml(string => $xc_out_dom->toString(0));
-    my $new_out   = $fixed_dom->documentElement;
+    $env->addChild($xc_out_dom);
+    my $fixed_dom = XML::LibXML->load_xml(string => $env->toString(0));
+    my $new_out   = ($fixed_dom->documentElement->childNodes)[0];
     $doc->importNode($new_out);
     $new_out;
 }
@@ -193,11 +212,12 @@ sub _create_keyinfo()
 #-----------------------------
 
 sub signMethod() {shift->{XCWS_signmeth}}
+sub checker()    {shift->{XCWS_checker}}
 
 sub _create_signer($$)
 {   my ($self, $method, $args) = @_;
     $method =~ $sign_algorithm
-        or error __x"Method {name} is not a sign algorithm";
+        or error __x"method {name} is not a sign algorithm";
     my ($algo, $hashing) = (uc $1, uc $2);
 
     if($algo eq 'RSA') { $self->_setup_hashing_rsa($hashing, $args) }
@@ -205,6 +225,38 @@ sub _create_signer($$)
     {   error __x"signing algorithm {name} not (yet) unsupported", name => $hashing;
     }
 
+}
+
+sub _checker_from_token($$)
+{   my ($self, $method, $token) = @_;
+    $method =~ $sign_algorithm
+        or error __x"method {name} is not a sign algorithm", name => $method;
+    my ($algo, $hashing) = (uc $1, uc $2);
+
+        $algo eq 'RSA' ? $self->_checker_from_token_rsa($hashing, $token)
+      : error __x"signing algorithm {name} not (yet) unsupported"
+          , name => $hashing;
+}
+
+sub _create_remote_pubkey($)
+{   my ($self, $args) = @_;
+    my $key = $args->{remote_pubkey} or return;
+
+    if(ref $key)
+    {   UNIVERSAL::isa($key, 'Crypt::OpenSSL::RSA')
+            or error __x"server public key object type not supported";
+        return $self->_check_rsa($key);
+    }
+
+    # construct a token as if from the server, less to implement per algo
+    my $method = $args->{remote_sign_method} || DSIG_RSA_SHA1;
+    my %token =
+      ( ValueType    => ($args->{remote_pubkey_type} || XTP10_X509)
+      , EncodingType => $args->{remote_pubkey_encoding}
+      , _            => $key
+      );
+
+    $self->_checker_from_token($method, \%token);
 }
 
 
@@ -230,15 +282,8 @@ sub checkElement($%)
         or error "element to check {name} has no wsu:Id"
              , name => $node->nodeName;
 
-warn "CHECK $id";
     $self->{XCWS_to_check}{$id} = $node;
 }
-#   my $sig  = $signatures{$uri} or panic $uri;
-#   my $ref  = $references{$uri} or panic $uri;
-#   $self->_digest_elem_check($node, $ref)
-# probably fails due to serialization problem of the body
-#        or warning __x"received body digest does not match";
-#    $node;
 
 
 sub elementsToCheck()
@@ -251,19 +296,24 @@ sub elementsToCheck()
 #-----------------------------
 #### HELPERS
 
+sub _get_sec_token($$)
+{   my ($self, $sec, $sig) = @_;
+    my $sec_tokens = $sig->{ds_KeyInfo}{cho_ds_KeyName}[0]
+        ->{wsse_SecurityTokenReference}{cho_any}[0];
+    my ($key_type, $key_data) = %$sec_tokens;
+    $key_type eq 'wsse_Reference'
+        or error __x"key-type {type} not yet supported", type => $key_type;
+    my $key_uri    = $key_data->{URI} or panic;
+    (my $key_id    = $key_uri) =~ s/^#//;
+    my $token      = $sec->{wsse_BinarySecurityToken};
 
-sub _digest_elem_check($$)
-{   my ($self, $elem, $ref) = @_;
-    my $transf   = $ref->{ds_Transforms}{ds_Transform}[0]; # only 1 transform
-    my ($inclns, $preflist) = %{$transf->{cho_any}[0]};    # only 1 kv pair
-    my $elem_c14n = $self->_apply_canon($transf->{Algorithm}, $preflist)
-        ->($elem);
+    $token->{wsu_Id} eq $key_id
+        or error __x"token does not match reference";
 
-#MO: Output not OK
-print "TEXT=$elem_c14n";
-
-    my $digmeth = $ref->{ds_DigestMethod}{Algorithm} || '(none)';
-    $self->digest($digmeth, \$elem_c14n) eq $ref->{ds_DigestValue};
+    $token->{ValueType} eq $key_data->{ValueType}
+        or error __x"token type {type1} does not match expected {type2}"
+            , type1 => $token->{ValueType}, type2 => $key_data->{ValueType};
+    $token;
 }
 
 sub prepareReading($)
@@ -272,38 +322,37 @@ sub prepareReading($)
 
     my %security_tokens;   # the BinarySecurityToken keys, binary form
 
-    my $take_security_token
-      = { type    => 'wsse:BinarySecurityTokenType'
-        , after   => sub {
-        my ($node, $data, $path) = @_;
-        my $id     = $data->{wsu_id} = $node->getAttributeNS(WSU_10, 'Id');
-
-        if(my $enc = $data->{EncodingType})
-        {   $enc eq WSM10_BASE64
-                or error __x"security token encoding {type} not supported"
-                    , type => $enc;
-            $security_tokens{$id} = decode_base64 $data->{_};
-        }
-
-        $data;
-       }};
-
-    $schema->declare(READER => 'wsse:BinarySecurityToken'
-      , hooks => $take_security_token);
+    $schema->declare(READER => 'ds:Signature',
+      , hooks => {type => 'ds:SignedInfoType', after => 'XML_NODE'});
 
     $self->{XCWS_reader} = sub {
-        my $data = shift;
-        my $sec  = $data->{wsse_Security}
-            or error __x"no security block found";
+        my $sec  = shift;
+#warn Dumper $sec;
+        my $sig  = $sec->{ds_Signature};
+        unless($sig)
+        {   # When the signature is missing, we only die if we expect one
+            $self->checker or return;
+            error __x"requires signature block missing from remote";
+        }
 
-        my $sig  = $sec->{ds_Signature}
-            or error __x"no signature block found";
+        my $info       = $sig->{ds_SignedInfo} || {};
 
-use Data::Dumper;
-#print "HOOK: ", Dumper $data;
-#XXX MO: check signed info first
-        my $info = $sig->{ds_SignedInfo} || {};
+        # Check signature on SignedInfo
+        my $can_meth   = $info->{ds_CanonicalizationMethod};
+        my $can_pref   = $can_meth->{c14n_InclusiveNamespaces}{PrefixList};
+        my $si_canon   = $self->_apply_canon($can_meth->{Algorithm}, $can_pref)
+            ->($info->{_XML_NODE});
 
+        my $checker    = $self->checker;
+        unless($checker)
+        {   my $sig_meth = $info->{ds_SignatureMethod}{Algorithm};
+            my $token    = $self->_get_sec_token($sec, $sig);
+            $checker     = $self->_checker_from_token($sig_meth, $token);
+        }
+        $checker->(\$si_canon, $sig->{ds_SignatureValue}{_})
+            or error __x"signature on SignedInfo incorrect";
+
+        # Check digest of the elements
         my %references;
         foreach my $ref (@{$info->{ds_Reference}})
         {   my $uri = $ref->{URI};
@@ -311,21 +360,20 @@ use Data::Dumper;
         }
 
         my $check = $self->elementsToCheck;
-print "FOUND: ", Dumper \%references, $info, $check;
+#print "FOUND: ", Dumper \%references, $info, $check;
         foreach my $id (sort keys %$check)
         {   my $node = $check->{$id};
             my $ref  = delete $references{"#$id"}
                 or error __x"cannot find digest info for {elem}", elem => $id;
             $self->_digest_elem_check($node, $ref)
                 or warning __x"digest info of {elem} is wrong", elem => $id;
-warn "OK $id";
         }
     };
 
     $self;
 }
 
-sub process_received($)
+sub check($)
 {   my ($self, $data) = @_;
     $self->{XCWS_reader}->($data);
 }
@@ -359,7 +407,7 @@ sub _fill_signed_info($$)
     
         my @refs;
         foreach my $part (@$parts)
-        {   my $digested  = $self->digest($digest, $canonical->($part->{node}));
+        {   my $digested  = $self->digest($digest,\$canonical->($part->{node}));
     
             my $transform =
               { Algorithm => $canon
@@ -403,6 +451,7 @@ sub prepareWriting($)
 
     $self->{XCWS_sign} = sub {
         my ($doc, $sec) = @_;
+        return $sec if $sec->{$sigt};
         my $info      = $fill_signed_info->($doc, $self->elementsToSign);
         my $keyinfo   = $settings->($doc, $sec);
         my $info_node = $self->_repair_xml($infow->($doc, $info));
@@ -423,8 +472,16 @@ sub prepareWriting($)
 }
 
 sub create($$)
-{   my ($self, $doc, $data) = @_;
-    $self->{XCWS_sign}->($doc, $data);
+{   my ($self, $doc, $sec) = @_;
+    # cannot do much yet, first the Body must be ready.
+    $self->{XCWS_sec_hdr} = $sec;
+    $self;
+}
+
+
+sub createSignature($)
+{   my ($self, $doc) = @_;
+    $self->{XCWS_sign}->($doc, $self->{XCWS_sec_hdr});
 }
 
 #---------------------------
@@ -472,4 +529,48 @@ sub _setup_hashing_rsa($$)
     $self->{XCWS_pubkey_base64} = $pub64;
     $self;
 }
+
+sub _checker_from_token_rsa($$)
+{   my ($self, $hashing, $token) = @_;
+
+    require Crypt::OpenSSL::RSA;
+#cache here based on token?  Performance worth the effort?
+
+    my $key = $token->{_};
+    my $enc = $token->{EncodingType};
+
+    if(!$enc)
+    {   $key = encode_base64 $key;
+        $enc = WSM10_BASE64;
+    }
+    elsif($enc eq WSM10_BASE64) {}
+    else {error __x"unsupported token encoding {type} received", type => $enc}
+
+    my $vtype  = $token->{ValueType};
+    $vtype eq XTP10_X509 || $vtype eq XTP10_X509PKI
+        or error __x"unsupported token type {type} received", type => $vtype;
+
+    $key       =~ s/^\s+//gm;
+    $key       =~ s/\s+$//gms;
+
+    my $wrap   = $vtype eq XTP10_X509 ? '' : ' RSA';
+    my $pubkey = Crypt::OpenSSL::RSA->new_public_key(<<__PUBLIC_KEY);
+-----BEGIN$wrap PUBLIC KEY-----
+$key
+-----END$wrap PUBLIC KEY-----
+__PUBLIC_KEY
+
+    my $use_hash = "use_\L$hashing\E_hash";
+    $pubkey->can($use_hash)
+        or error __x"hash {type} not supported by {pkg}"
+            , type => $hashing, pkg => ref $pubkey;
+    $pubkey->$use_hash();
+    $self->_check_rsa($pubkey);
+}
+
+sub _check_rsa($)
+{   my ($self, $pubkey) = @_;
+    sub { my ($plain, $sig) = @_; $pubkey->verify($$plain, $sig) }
+}
+
 1;
