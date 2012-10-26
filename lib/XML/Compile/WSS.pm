@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 
 use Log::Report 'xml-compile-wss';

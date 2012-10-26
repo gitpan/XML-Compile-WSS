@@ -1,6 +1,27 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.03: Fri Oct 26 17:22:22 CEST 2012
+
+	Fixes:
+
+	- signature: new(remote_pubkey) is documented to accept a filename,
+	  but that was not handled. [Karen Etheridge]
+
+	- signature: also include empty prefixList.
+
+	- signature: openssl input format very stringly 64 chars per
+	  base64 encoded line.
+
+	Improvements:
+
+	- do not use UNIVERSAL::isa [Karen Etheridge]
+
+	- support for receiving X509v3 certificates
+
+	- signature: remove unused _apply_canon_siginfo()
+	  detected by [Karen Etheridge]
+
 version 1.02: Mon Oct 22 11:17:34 CEST 2012
 
 	Fixes:

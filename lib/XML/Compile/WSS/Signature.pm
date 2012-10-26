@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Signature;
 use vars '$VERSION';
-$VERSION = '1.02';
+$VERSION = '1.03';
 
 use base 'XML::Compile::WSS';
 
@@ -16,11 +16,12 @@ use Log::Report 'xml-compile-wss';
 use XML::Compile::WSS::Util   qw/:wss11 :dsig :xtp10 :wsm10/;
 use XML::Compile::C14N::Util  qw/:c14n/;
 
-use XML::LibXML               ();
-use HTTP::Response            ();
-use MIME::Base64              qw/decode_base64 encode_base64/;
-use File::Slurp               qw/read_file/;
-use Digest                    ();
+use XML::LibXML     ();
+use HTTP::Response  ();
+use MIME::Base64    qw/decode_base64 encode_base64/;
+use File::Slurp     qw/read_file/;
+use Digest          ();
+use Scalar::Util    qw/blessed/;
 
 my $unique = $$.time;
 
@@ -36,6 +37,12 @@ my %canon =          #comment  excl
   , &C14N_EXC_NO_COMM  => [ 0, 1 ]
   , &C14N_EXC_COMMENTS => [ 1, 1 ]
   );
+
+my %keywraps =
+ ( &XTP10_X509    => 'PUBLIC KEY'
+ , &XTP10_X509PKI => 'RSA PUBLIC KEY'
+ , &XTP10_X509v3  => 'CERTIFICATE'
+ );
 
 my ($digest_algorithm, $sign_algorithm);
 {  my ($signs, $sigmns) = (DSIG_NS, DSIG_MORE_NS);
@@ -153,16 +160,6 @@ sub _apply_canon(;$$)
     };
 }
 
-sub _apply_canon_siginfo($$)
-{   my ($self, $siginfo_node, $sig) = @_;
-
-    my $canon = $sig->{ds_SignedInfo}{ds_CanonicalizationMethod} or panic;
-    $self->_apply_canon
-      ( $canon->{Algorithm}
-      , $canon->{c14n_InclusiveNamespaces}{PrefixList}
-      )->($siginfo_node);
-}
-
 #-----------------------------
 
 
@@ -243,9 +240,14 @@ sub _create_remote_pubkey($)
     my $key = $args->{remote_pubkey} or return;
 
     if(ref $key)
-    {   UNIVERSAL::isa($key, 'Crypt::OpenSSL::RSA')
+    {   blessed $key && $key->isa('Crypt::OpenSSL::RSA')
             or error __x"server public key object type not supported";
         return $self->_check_rsa($key);
+    }
+
+    if($key =~ m/\.(?:der|pub)$/i)
+    {   my $pubkey = Crypt::OpenSSL::RSA->new_public_key(scalar read_file $key);
+        return $self->_check_rsa($pubkey);
     }
 
     # construct a token as if from the server, less to implement per algo
@@ -382,11 +384,10 @@ sub check($)
 
 sub _create_inclns($)
 {   my ($self, $prefixes) = @_;
-    $prefixes && @$prefixes or return ();
-
-    my $schema = $self->schema;
-    my $type   = $schema->findName('c14n:InclusiveNamespaces');
-    my $incns  = $schema->writer($type, include_namespaces => 0);
+    $prefixes ||= [];
+    my $schema  = $self->schema;
+    my $type    = $schema->findName('c14n:InclusiveNamespaces');
+    my $incns   = $schema->writer($type, include_namespaces => 0);
 
     ( $type, sub {$incns->($_[0], {PrefixList => $prefixes})} );
 }
@@ -498,7 +499,7 @@ sub _setup_hashing_rsa($$)
         or error "signer rsa requires the private_rsa key";
 
     my $privkey = $self->{XCWS_privkey}
-      = UNIVERSAL::isa($priv, 'Crypt::OpenSSL::RSA') ? $priv
+      = blessed $priv && $priv->isa('Crypt::OpenSSL::RSA') ? $priv
       : index($priv, "\n") >= 0
       ? Crypt::OpenSSL::RSA->new_private_key($priv)
       : Crypt::OpenSSL::RSA->new_private_key(scalar read_file $priv);
@@ -506,7 +507,7 @@ sub _setup_hashing_rsa($$)
     ### Public key
     my $pub    = $args->{public_key} || $privkey;
     my $pubkey = $self->{XCWS_pubkey}
-      = UNIVERSAL::isa($pub, 'Crypt::OpenSSL::RSA') ? $pub
+      = blessed $pub && $pub->isa('Crypt::OpenSSL::RSA')? $pub
       : index($pub, "\n") >= 0
       ? Crypt::OpenSSL::RSA->new_public_key($pub)
       : Crypt::OpenSSL::RSA->new_public_key(scalar read_file $pub);
@@ -547,17 +548,19 @@ sub _checker_from_token_rsa($$)
     else {error __x"unsupported token encoding {type} received", type => $enc}
 
     my $vtype  = $token->{ValueType};
-    $vtype eq XTP10_X509 || $vtype eq XTP10_X509PKI
+    my $wrap   = $keywraps{$vtype}
         or error __x"unsupported token type {type} received", type => $vtype;
 
-    $key       =~ s/^\s+//gm;
-    $key       =~ s/\s+$//gms;
-
-    my $wrap   = $vtype eq XTP10_X509 ? '' : ' RSA';
+    # the input format of openssl is very strict
+    for($key)
+    {   s/\s+//gs;
+        s/(.{64})/$1\n/g;   # exactly 64 chars per line
+        s/\s*\z//s;
+    }
     my $pubkey = Crypt::OpenSSL::RSA->new_public_key(<<__PUBLIC_KEY);
------BEGIN$wrap PUBLIC KEY-----
+-----BEGIN $wrap-----
 $key
------END$wrap PUBLIC KEY-----
+-----END $wrap-----
 __PUBLIC_KEY
 
     my $use_hash = "use_\L$hashing\E_hash";

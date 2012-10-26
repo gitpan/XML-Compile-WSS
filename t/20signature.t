@@ -57,7 +57,7 @@ sub fake_server($$)
 {  my ($request, $trace) = @_;
    my $content = $request->decoded_content;
    my $xml   = XML::LibXML->load_xml(string => $content);
-#warn $xml->toString(1);
+warn $xml->toString(1);
 
 #warn "SENDING RESPONSE";
    HTTP::Response->new(200, 'OK', ['Content-Type' => 'application/xml'], $content);
