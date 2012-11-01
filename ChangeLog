@@ -1,6 +1,17 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.05: Thu Nov  1 15:44:26 CET 2012
+
+	Fixes:
+
+	- flag ::BasicAuth nonce as Base64 encoded.
+	  rt.cpan.org#80544 [chernomyrdin]
+
+	Improvements:
+
+	- another nice error when the used initiates ::WSDL before ::WSS
+
 version 1.04: Thu Nov  1 11:44:42 CET 2012
 
 	Changes:

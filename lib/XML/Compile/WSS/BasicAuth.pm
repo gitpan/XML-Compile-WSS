@@ -7,13 +7,13 @@ use strict;
 
 package XML::Compile::WSS::BasicAuth;
 use vars '$VERSION';
-$VERSION = '1.04';
+$VERSION = '1.05';
 
 use base 'XML::Compile::WSS';
 
 use Log::Report  'xml-compile-wss';
 
-use XML::Compile::WSS::Util qw/:wss11 :utp11/;
+use XML::Compile::WSS::Util qw/:wss11 :utp11 WSM10_BASE64/;
 
 use Digest::SHA1 qw/sha1_base64/;
 use Encode       qw/encode/;
@@ -64,7 +64,7 @@ sub prepareWriting($)
         my ($doc, $nonce) = @_;
         my $enc = encode_base64 $nonce;
         $enc    =~ s/\n$//;
-        $w_nonce->($doc, {_ => $enc});
+        $w_nonce->($doc, {_ => $enc, EncodingType => WSM10_BASE64});
     };
 
     my $created_type = $schema->findName('wsu:Created');

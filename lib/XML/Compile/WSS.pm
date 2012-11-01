@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '1.04';
+$VERSION = '1.05';
 
 
 use Log::Report 'xml-compile-wss';
@@ -65,7 +65,9 @@ sub init($)
 
 sub prepare($)
 {   my ($self, $args) = @_;
-    my $schema = $self->schema;
+    my $schema = $self->schema
+        or error __x"no schema yet. Instantiate ::WSS before ::WSDL";
+
     $self->prepareWriting($schema);
     $self->prepareReading($schema);
     $self;

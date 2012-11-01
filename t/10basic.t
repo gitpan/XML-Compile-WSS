@@ -34,7 +34,7 @@ isa_ok($xml, 'XML::LibXML::Element');
 is($xml->toString(1)."\n", <<'__EXPECT');
 <wsse:UsernameToken xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
   <wsse:Username>foo</wsse:Username>
-  <wsse:Nonce>QUJDRA==</wsse:Nonce>
+  <wsse:Nonce EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">QUJDRA==</wsse:Nonce>
   <wsse:Password Type="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest">vwmfO2G3ZB0hUC/MqV8n9hpr9JE=</wsse:Password>
   <wsu:Created ValueType="http://www.w3.org/2001/XMLSchema/dateTime">2012-10-14T22:26:20Z</wsu:Created>
 </wsse:UsernameToken>
