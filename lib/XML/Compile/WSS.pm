@@ -7,14 +7,13 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 
 use Log::Report 'xml-compile-wss';
 
-use XML::Compile::WSS::Util qw/:wss11 UTP11_PDIGEST UTP11_PTEXT/;
+use XML::Compile::WSS::Util qw/:wss11/;
 use XML::Compile::Util      qw/SCHEMA2001/;
-use XML::Compile::C14N;
 use XML::Compile::Schema::BuiltInTypes qw/builtin_type_info/;
 
 use File::Basename          qw/dirname/;
@@ -23,14 +22,18 @@ use Encode                  qw/encode/;
 use MIME::Base64            qw/encode_base64/;
 use POSIX                   qw/strftime/;
 
-my @prefixes11 = 
- ( wss   => WSS_11,  wsu    => WSU_10,    wsse  => WSSE_10
- , ds    => DSIG_NS, dsig11 => DSIG11_NS, dsigm => DSIG_MORE_NS
- , xenc  => XENC_NS, ghc    => GHC_NS,    dsp   => DSP_NS
- );
+my @prefixes10 =
+  ( ds  => DSIG_NS, wsse => WSSE_10, wsu => WSU_10
+  );
+
+my @prefixes11 =
+  ( ds  => DSIG_NS, wsse => WSSE_10, wsu => WSU_10
+  , wss => WSS_11,  xenc => XENC_NS
+  );
 
 my %versions =
-  ( '1.1' => {xsddir => 'wss11', prefixes => \@prefixes11}
+  ( '1.0' => { xsddir => 'wss10', prefixes => \@prefixes10 }
+  , '1.1' => { xsddir => 'wss11', prefixes => \@prefixes11 }
   );
 
 
@@ -40,7 +43,6 @@ sub new(@)
     (bless {}, $class)->init($args)->prepare;
 }
 
-my $schema;
 sub init($)
 {   my ($self, $args) = @_;
     my $version = $args->{wss_version} || $args->{version}
@@ -55,15 +57,15 @@ sub init($)
              , v => $version, vs => [keys %versions];
     $self->{XCW_version} = $version;
 
-    if($schema = $args->{schema})
-    {   my $class = ref $self;    # it is class, not object, related!
-        $class->loadSchemas($args->{schema}, $version);
+    if(my $schema = $self->{XCW_schema} = $args->{schema})
+    {   $self->loadSchemas($schema, $version);
     }
     $self;
 }
 
 sub prepare($)
 {   my ($self, $args) = @_;
+    my $schema = $self->schema;
     $self->prepareWriting($schema);
     $self->prepareReading($schema);
     $self;
@@ -73,8 +75,9 @@ sub prepareReading($) { shift }
 
 #-----------
 
-sub version() {shift->{XCW_version}}
-sub schema()  {$schema}
+sub version()    {shift->{XCW_version}}  # deprecated
+sub wssVersion() {shift->{XCW_version}}
+sub schema()     {shift->{XCW_schema}}
 
 #-----------
 
@@ -100,27 +103,11 @@ sub dateTime($)
       };
 }
 
-# Some elements are allowed to have an Id attribute from the wsu
-# schema, regardless of what the actual schema documents say.  So an
-# attribute "wsu_Id" should get interpreted as such, if the writer
-# has registered this hook.
-sub _hook_WSU_ID
-{   my ($doc, $values, $path, $tag, $r) = @_ ;
-    my $id = delete $values->{wsu_Id};  # remove first, to avoid $r complaining
-    my $node = $r->($doc, $values);
-    if($id)
-    {   $node->setNamespace(WSU_10, 'wsu', 0);
-        $node->setAttributeNS(WSU_10, 'Id' => $id);
-    }
-    $node;
-}
-
 #-----------
 
-my $schema_loaded = 0;
 sub loadSchemas($$)
-{   my ($class, $schema, $version) = @_;
-    return $class if $schema_loaded++;
+{   my ($thing, $schema, $version) = @_;
+    return if $schema->{"XCW_wss_loaded"}++;
 
     $schema->isa('XML::Compile::Cache')
         or error __x"loadSchemas() requires a XML::Compile::Cache object";
@@ -135,25 +122,25 @@ sub loadSchemas($$)
     (my $xsddir = __FILE__) =~ s! \.pm$ !/$def->{xsddir}!x;
     my @xsd = glob "$xsddir/*.xsd";
 
-    trace "loading wss for $version";
+    trace "loading wss schemas $version";
 
     $schema->importDefinitions
-       ( \@xsd
+     ( \@xsd
 
-         # Missing from wss-secext-1.1.xsd (schema BUG)  Gladly, all
-         # provided schemas have element_form qualified.
-       , element_form_default => 'qualified'
-       );
+       # Missing from wss-secext-1.1.xsd (schema BUG)  Gladly, all
+       # provided schemas have element_form qualified.
+     , element_form_default => 'qualified'
+     );
 
     # Another schema bug; attribute wsu:Id not declared qualified
     # Besides, ValueType is often used on timestamps, which are declared
     # as free-format fields (@*!&$#!&^ design committees!)
-    my ($wsu, $xsd) = (WSU_10, SCHEMA2001);
+    my ($wsu10, $xsd) = (WSU_10, SCHEMA2001);
     $schema->importDefinitions( <<__PATCH );
 <schema
   xmlns="$xsd"
-  xmlns:wsu="$wsu"
-  targetNamespace="$wsu"
+  xmlns:wsu="$wsu10"
+  targetNamespace="$wsu10"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified">
     <attribute name="Id" type="ID" form="qualified" />
@@ -170,11 +157,30 @@ sub loadSchemas($$)
 </schema>
 __PATCH
 
-    XML::Compile::C14N->new(version => '1.1', schema => $schema);
     $schema->allowUndeclared(1);
     $schema->addCompileOptions(RW => mixed_elements => 'STRUCTURAL');
     $schema->anyElement('ATTEMPT');
     $schema;
+}
+
+
+sub writerHookWsuId($)
+{   my ($self, $type) = @_;
+
+    my $wrapper = sub
+      { my ($doc, $values, $path, $tag, $r) = @_ ;
+
+        # Remove $id first, to avoid $r complaining about unused
+        my $id   = delete $values->{wsu_Id};
+        my $node = $r->($doc, $values);
+        if($id)
+        {   $node->setNamespace(WSU_10, 'wsu', 0);
+            $node->setAttributeNS(WSU_10, 'Id' => $id);
+        }
+        $node;
+      };
+
+     +{ type => $type, replace => $wrapper };
 }
 
 #---------------------------

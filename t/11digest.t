@@ -30,7 +30,8 @@ my $then    = '2012-08-17T12:02:31Z';
 my $wss     = XML::Compile::SOAP::WSS->new;
 my $wsdl    = XML::Compile::WSDL11->new('t/example.wsdl');
 
-my $getVersion = $wsdl->compileClient($operation, transport_hook => \&test_server);
+my $getVersion = $wsdl->compileClient($operation
+  , transport_hook => \&test_server);
 
 my $auth = $wss->basicAuth
   ( username => $username

@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Util;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'Exporter';
 
@@ -91,9 +91,6 @@ our %EXPORT_TAGS =
 # Path components, not exported
 use constant
   { WSS_BASE => 'http://docs.oasis-open.org/wss'
-  , C14N10   => 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
-  , C14N11   => 'http://www.w3.org/2006/12/xml-c14n11'
-  , C14NEXC  => 'http://www.w3.org/2001/10/xml-exc-c14n'
   , DSIG     => 'http://www.w3.org/2000/09/xmldsig'
   , DSIG11   => 'http://www.w3.org/2009/xmldsig11'
   , DSIGM    => 'http://www.w3.org/2001/04/xmldsig-more'

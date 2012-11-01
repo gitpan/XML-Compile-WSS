@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Timestamp;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'XML::Compile::WSS';
 
@@ -51,18 +51,6 @@ sub timestamps()
     ($created, $self->dateTime($e));
 }
 
-# To be merged with the one a level lower.
-sub _hook_WSU_ID
-{   my ($doc, $values, $path, $tag, $r) = @_ ;
-    my $id = delete $values->{wsu_Id};  # remove first, to avoid $r complaining
-    my $node = $r->($doc, $values);
-    if($id)
-    {   $node->setNamespace(WSU_10, 'wsu', 0);
-        $node->setAttributeNS(WSU_10, Id => $id);
-    }
-    $node;
-}
-
 sub prepareWriting($)
 {   my ($self, $schema) = @_;
     $self->SUPER::prepareWriting($schema);
@@ -70,7 +58,7 @@ sub prepareWriting($)
 
     my $ts_type = $schema->findName('wsu:Timestamp') ;
     my $make_ts = $schema->writer($ts_type, include_namespaces => 1,
-      , hook => {type => 'wsu:TimestampType', replace => \&_hook_WSU_ID} );
+      , hook => $self->writerHookWsuId('wsu:TimestampType'));
     $schema->prefixFor(WSU_10);
 
     $self->{XCWT_stamp} = sub {

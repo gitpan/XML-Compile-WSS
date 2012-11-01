@@ -18,14 +18,12 @@ no_index:
     - t
     - inc
 requires:
-  Digest::SHA1: 0
   Encode: 0
   File::Basename: 0
   Log::Report: 0.92
   MIME::Base64: 0
   Test::More: 0.54
   XML::Compile: 1.29
-  XML::Compile::C14N: 0.10
   XML::Compile::Cache: 0.992
-  XML::Compile::SOAP: 2.32
-version: 1.03
+  XML::Compile::SOAP: 2.33
+version: 1.04

@@ -9,10 +9,10 @@ XML::Compile::WSS::BasicAuth - username/password security
 
 =head1 SYNOPSIS
 
- # you may need a few of these
+ # you need a few constants
  use XML::Compile::WSS::Util  qw/:utp11/;
 
- # used in combination with anything
+ # used in combination with any other XML schema
  my $auth = XML::Compile::WSS::BasicAuth->new
    ( schema   => $anything
    , username => $user
@@ -43,16 +43,16 @@ a timestamp, a nonce and SHA1 hashing will keep the password a secret.
 
 =item XML::Compile::WSS::BasicAuth-E<gt>B<new>(OPTIONS)
 
- -Option     --Defined in     --Default
-  created                       undef
-  nonce                         'RANDOM'
-  password                      <required>
-  pwformat                      UTP11_PTEXT
+ -Option     --Defined in       --Default
+  created                         undef
+  nonce                           'RANDOM'
+  password                        <required>
+  pwformat                        UTP11_PTEXT
   schema       XML::Compile::WSS  undef
-  username                      <required>
+  username                        <required>
   version      XML::Compile::WSS  undef
   wss_version  XML::Compile::WSS  '1.1'
-  wsu_Id                        undef
+  wsu_Id                          undef
 
 =over 2
 
@@ -70,6 +70,9 @@ STRING. The constant text 'RANDOM' will have a random nonce generator
 being called at each message.
 
 =item password => STRING
+
+The password in plain text.  Use pwformat digest to send it encrypted
+over the network.
 
 =item pwformat => UTP11_PTEXT|UTP11_PDIGEST
 
@@ -110,7 +113,7 @@ See L<XML::Compile::WSS/"Attributes">
 
 =item $obj-E<gt>B<username>()
 
-=item $obj-E<gt>B<version>()
+=item $obj-E<gt>B<wssVersion>()
 
 See L<XML::Compile::WSS/"Attributes">
 
@@ -146,7 +149,13 @@ See L<XML::Compile::WSS/"Helpers">
 
 =over 4
 
+=item $obj-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+
 =item XML::Compile::WSS::BasicAuth-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+
+See L<XML::Compile::WSS/"Internals">
+
+=item $obj-E<gt>B<writerHookWsuId>(TYPE)
 
 See L<XML::Compile::WSS/"Internals">
 
@@ -154,8 +163,8 @@ See L<XML::Compile::WSS/"Internals">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.03,
-built on October 26, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.04,
+built on November 01, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -165,6 +174,7 @@ L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
 L<XML::Compile::C14N>,
 L<XML::Compile::WSS>,
+L<XML::Compile::WSS::Signature>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -176,6 +186,7 @@ L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
+
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 

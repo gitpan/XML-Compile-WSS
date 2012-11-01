@@ -9,7 +9,7 @@ XML::Compile::WSS::Timestamp - expiration
 
 =head1 SYNOPSIS
 
- # used in combination with anything
+ # used in combination with any XML schema
  my $wss = XML::Compile::WSS::Timestamp->new
    ( ... parametes, some required
    , schema => $anything
@@ -19,7 +19,7 @@ XML::Compile::WSS::Timestamp - expiration
  my $wss  = XML::Compile::SOAP::WSS->new;
  my $wsdl = XML::Compile::WSDL11->new($wsdlfn);
  my $ts   = $wss->timestamp
-   ( ... same params
+   ( ... same params, never 'schema'
    );
 
 =head1 DESCRIPTION
@@ -36,14 +36,14 @@ record.
 
 =item XML::Compile::WSS::Timestamp-E<gt>B<new>(OPTIONS)
 
- -Option     --Defined in     --Default
-  created                       now
-  expires                       undef
-  lifetime                      undef
+ -Option     --Defined in       --Default
+  created                         now
+  expires                         undef
+  lifetime                        undef
   schema       XML::Compile::WSS  undef
   version      XML::Compile::WSS  undef
   wss_version  XML::Compile::WSS  '1.1'
-  wsu_Id                        undef
+  wsu_Id                          undef
 
 =over 2
 
@@ -96,7 +96,7 @@ See L<XML::Compile::WSS/"Attributes">
 
 Returns the "created" and "expires" timestamps.  Both may be undef.
 
-=item $obj-E<gt>B<version>()
+=item $obj-E<gt>B<wssVersion>()
 
 See L<XML::Compile::WSS/"Attributes">
 
@@ -132,7 +132,13 @@ See L<XML::Compile::WSS/"Helpers">
 
 =over 4
 
+=item $obj-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+
 =item XML::Compile::WSS::Timestamp-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+
+See L<XML::Compile::WSS/"Internals">
+
+=item $obj-E<gt>B<writerHookWsuId>(TYPE)
 
 See L<XML::Compile::WSS/"Internals">
 
@@ -140,8 +146,8 @@ See L<XML::Compile::WSS/"Internals">
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.03,
-built on October 26, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.04,
+built on November 01, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -151,6 +157,7 @@ L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
 L<XML::Compile::C14N>,
 L<XML::Compile::WSS>,
+L<XML::Compile::WSS::Signature>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -162,6 +169,7 @@ L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
+
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 

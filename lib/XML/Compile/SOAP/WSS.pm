@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::WSS;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'XML::Compile::SOAP::Extension';
 
@@ -43,10 +43,14 @@ sub wsdl11Init($$)
 sub soap11OperationInit($$)
 {   my ($self, $op, $args) = @_;
 
+    my $schema = $self->schema
+        or error __x"WSS not connected to the WSDL: WSS needs to be instantiated
+before the WSDL because it influences its interpretation";
+
     trace "adding wss header logic";  # get full type from any schema
-    my $sec = $self->schema->findName('wsse:Security');
-    $op->addHeader(INPUT  => "wsse_Security" => $sec);
-    $op->addHeader(OUTPUT => "wsse_Security" => $sec);
+    my $sec = $schema->findName('wsse:Security');
+    $op->addHeader(INPUT  => "wsse_Security" => $sec, mustUnderstand => 1);
+    $op->addHeader(OUTPUT => "wsse_Security" => $sec, mustUnderstand => 1);
 }
 
 sub soap11ClientWrapper($$$)
@@ -78,9 +82,13 @@ sub soap11ClientWrapper($$$)
 
 #---------------------------
 
-sub schema()     {shift->{XCSW_schema}}
-sub wssConfigs() { @{shift->{XCSW_wss}} }
-sub addWSS($) { my ($wss, $n) = (shift->{XCSW_wss}, shift); push @$wss, $n; $n }
+sub schema()   { shift->{XCSW_schema} }
+sub features() { @{shift->{XCSW_wss}} }
+sub addFeature($)
+{   my ($wss, $n) = (shift->{XCSW_wss}, shift);
+    push @$wss, $n;
+    $n;
+}
 
 #---------------------------
 
@@ -94,7 +102,7 @@ sub _start($$)
         or error __x"instantiate {pkg} before the wsdl, plugins after"
              , pkg => __PACKAGE__;
 
-    $self->addWSS($plugin->new($args));
+    $self->addFeature($plugin->new($args));
 }
 
 

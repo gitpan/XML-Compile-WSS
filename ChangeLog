@@ -1,6 +1,38 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.04: Thu Nov  1 11:44:42 CET 2012
+
+	Changes:
+
+	- split-of ::Signature into separate distribution
+	  XML::Compile::WSS::Signature  Also moved a lot of the
+	  schema's to that module.
+
+	Fixes:
+
+	- include_namespaces on SignedInfo for Canonicalization.
+
+	Improvements:
+
+	- add mustUnderstand attribute to the security header.
+
+	- remove (not exported) C14N* constants from ::Util, because
+	  they are in XML::Compile::C14N::Util
+
+	- permit WSS objects on multiple ::Cache objects [Caleb Cushing]
+	  Only one version of WSS per schema.
+
+	- loadSchemas() is now also instance method.
+
+	- clean-up 3 times function _hook_WSU_ID() for one method
+	  ::WSS::writerHookWsuId()
+
+	- clean error message when the WSS object is created after the WSDL.
+
+	- ::SOAP::WSS::wssConfigs() renamed to ::features()
+	  ::SOAP::WSS::addWSS() renamed to ::addFeature()
+
 version 1.03: Fri Oct 26 17:22:22 CEST 2012
 
 	Fixes:

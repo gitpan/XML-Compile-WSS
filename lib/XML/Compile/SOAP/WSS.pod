@@ -22,25 +22,28 @@ XML::Compile::SOAP::WSS - Web Service Security used in SOAP
    );
 
  # Will include all defined security features
- my $call = $wsdl->compileClient($opname);
+ my $call     = $wsdl->compileClient($opname);
  my ($answer, $trace) = $call->(%data);
 
  # Only explicit security features:
- my $call = $wsdl->compileClient($opname);
+ my $call     = $wsdl->compileClient($opname);
  my ($answer, $trace) = $call->(wsse_Security => $auth, %data);
- my $trace = $call->(wsse_Security => [$auth], %data);
+
+ my @features = ($auth);    # any selection of features
+ my $answer   = $call->(wsse_Security => \@features, %data);
 
 =head1 DESCRIPTION
 
-The Web Service Security protocol is implemented in extensions of
-L<XML::Compile::WSS|XML::Compile::WSS>. This module integrates WSS in SOAP usage.
+The Web Service Security protocol is implemented in the sub-classes of
+L<XML::Compile::WSS|XML::Compile::WSS>. This module integrates WSS features in SOAP usage.
 
-This module is an XML::Compile::SOAP::Extension, a plugin for the
-SOAP code.  Some of these protocols implemented with these plugins
-behave badly: interfere with the WSDL specification.  Therefore, these
-B<WSDL plugins> have to be B<instantiated before the WSDL> files get read.
-The use of the information can only take place when all schema's are read,
-so these B<security features> can only be B<created after> that.
+This module is an XML::Compile::SOAP::Extension; a plugin for the
+SOAP infra-structure.  Many of these extension protocols behave badly:
+they usually interfere with the WSDL specification.  Therefore, all
+B<WSDL plugins> have to be instantiated before the WSDL files get read,
+i.e. before the WSDL object itself gets instantiated.  The use of the
+information can only take place when all schema's are read, so these
+security features can only be created after that.
 
 =head1 METHODS
 
@@ -50,8 +53,16 @@ so these B<security features> can only be B<created after> that.
 
 =item XML::Compile::SOAP::WSS-E<gt>B<new>(OPTIONS)
 
-Usually, you do not call L<new()|XML::Compile::SOAP::WSS/"Constructors"> but one of the specific constructors.
-Depends on the WSS feature you need.
+ -Option--Default
+  schema  undef
+
+=over 2
+
+=item schema => L<XML::Compile::Cache|XML::Compile::Cache> object
+
+Do not use this in combination with a WSDL, but always in any other case.
+
+=back
 
 =back
 
@@ -59,17 +70,22 @@ Depends on the WSS feature you need.
 
 =over 4
 
-=item $obj-E<gt>B<addWSS>(WSSOBJ)
+=item $obj-E<gt>B<addFeature>(WSSOBJ)
 
-Add a new L<XML::Compile::WSS|XML::Compile::WSS> object to the list of maintained.
+Add a new L<XML::Compile::WSS|XML::Compile::WSS> object to the list of maintained features.
+
+=item $obj-E<gt>B<features>()
+
+Returns a list of all security features.
 
 =item $obj-E<gt>B<schema>()
-
-=item $obj-E<gt>B<wssConfigs>()
 
 =back
 
 =head2 Security features
+
+Create one or more of these "features", components in the security
+header.
 
 =over 4
 
@@ -95,8 +111,8 @@ passed to its new() method.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.03,
-built on October 26, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.04,
+built on November 01, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -106,6 +122,7 @@ L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
 L<XML::Compile::C14N>,
 L<XML::Compile::WSS>,
+L<XML::Compile::WSS::Signature>,
 L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
@@ -117,6 +134,7 @@ L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
 F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
+
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 

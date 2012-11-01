@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::BasicAuth;
 use vars '$VERSION';
-$VERSION = '1.03';
+$VERSION = '1.04';
 
 use base 'XML::Compile::WSS';
 
@@ -53,18 +53,6 @@ sub wsuId()    {shift->{XCWB_wsu_id}  }
 sub created()  {shift->{XCWB_created} }
 sub pwformat() {shift->{XCWB_pwformat}}
 
-# To be merged with the one a level lower.
-sub _hook_WSU_ID
-{   my ($doc, $values, $path, $tag, $r) = @_ ;
-    my $id = delete $values->{wsu_Id};  # remove first, to avoid $r complaining
-    my $node = $r->($doc, $values);
-    if($id)
-    {   $node->setNamespace(WSU_10, 'wsu', 0);
-        $node->setAttributeNS(WSU_10, 'Id' => $id);
-    }
-    $node;
-}
-
 sub prepareWriting($)
 {   my ($self, $schema) = @_;
     $self->SUPER::prepareWriting($schema);
@@ -97,8 +85,7 @@ sub prepareWriting($)
     # We set up the writer with a hook to add that particular attribute.
     my $un_type = $schema->findName('wsse:UsernameToken');
     my $make_un = $schema->writer($un_type, include_namespaces => 1,
-      , hook => { type    => 'wsse:UsernameTokenType'
-                , replace => \&_hook_WSU_ID});
+      , hook => $self->writerHookWsuId('wsse:UsernameTokenType'));
     $schema->prefixFor(WSU_10);  # to get ns-decl
 
     $self->{XCWB_login} = sub {
