@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::Timestamp;
 use vars '$VERSION';
-$VERSION = '1.05';
+$VERSION = '1.06';
 
 use base 'XML::Compile::WSS';
 

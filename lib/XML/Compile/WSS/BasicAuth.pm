@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::BasicAuth;
 use vars '$VERSION';
-$VERSION = '1.05';
+$VERSION = '1.06';
 
 use base 'XML::Compile::WSS';
 
@@ -15,7 +15,7 @@ use Log::Report  'xml-compile-wss';
 
 use XML::Compile::WSS::Util qw/:wss11 :utp11 WSM10_BASE64/;
 
-use Digest::SHA1 qw/sha1_base64/;
+use Digest::SHA  qw/sha1_base64/;
 use Encode       qw/encode/;
 use MIME::Base64 qw/encode_base64/;
 use POSIX        qw/strftime/;
