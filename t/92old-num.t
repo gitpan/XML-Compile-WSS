@@ -10,9 +10,9 @@
 use strict ;
 use warnings ;
 
-use Digest::SHA1            qw/sha1_base64/;
-use Encode                  qw/encode/;
-use MIME::Base64            qw/encode_base64 decode_base64/ ;
+use Digest::SHA     qw/sha1_base64/;
+use Encode          qw/encode/;
+use MIME::Base64    qw/encode_base64 decode_base64/ ;
 
 use Test::More tests => 24 ;
 
