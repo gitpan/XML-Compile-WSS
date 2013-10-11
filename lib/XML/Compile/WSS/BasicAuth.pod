@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::WSS::BasicAuth - username/password security
@@ -35,10 +37,16 @@ i.e. username/password validation.
 You can best use digested passwords (UTP11_PDIGEST)  In that case,
 a timestamp, a nonce and SHA1 hashing will keep the password a secret.
 
+See L<documentation in the base class|XML::Compile::WSS/"DESCRIPTION">.
+ 
 =head1 METHODS
 
+See L<documentation in the base class|XML::Compile::WSS/"METHODS">.
+ 
 =head2 Constructors
 
+See L<documentation in the base class|XML::Compile::WSS/"Constructors">.
+ 
 =over 4
 
 =item XML::Compile::WSS::BasicAuth-E<gt>B<new>(OPTIONS)
@@ -47,6 +55,7 @@ a timestamp, a nonce and SHA1 hashing will keep the password a secret.
   created                         undef
   nonce                           'RANDOM'
   password                        <required>
+  prepare      XML::Compile::WSS  'ALL'
   pwformat                        UTP11_PTEXT
   schema       XML::Compile::WSS  undef
   username                        <required>
@@ -74,6 +83,8 @@ being called at each message.
 The password in plain text.  Use pwformat digest to send it encrypted
 over the network.
 
+=item prepare => 'READER'|'WRITER'|'ALL'|'NONE'
+
 =item pwformat => UTP11_PTEXT|UTP11_PDIGEST
 
 With C<UTP11_PTEXT>, the plain-text version of the password is shown.
@@ -99,6 +110,8 @@ Adds a C<wsu:Id> attribute to the created element.
 
 =head2 Attributes
 
+See L<documentation in the base class|XML::Compile::WSS/"Attributes">.
+ 
 =over 4
 
 =item $obj-E<gt>B<created>()
@@ -123,6 +136,8 @@ See L<XML::Compile::WSS/"Attributes">
 
 =head2 Apply
 
+See L<documentation in the base class|XML::Compile::WSS/"Apply">.
+ 
 =over 4
 
 =item $obj-E<gt>B<check>(SECURITY)
@@ -137,6 +152,8 @@ See L<XML::Compile::WSS/"Apply">
 
 =head2 Helpers
 
+See L<documentation in the base class|XML::Compile::WSS/"Helpers">.
+ 
 =over 4
 
 =item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
@@ -147,6 +164,8 @@ See L<XML::Compile::WSS/"Helpers">
 
 =head2 Internals
 
+See L<documentation in the base class|XML::Compile::WSS/"Internals">.
+ 
 =over 4
 
 =item $obj-E<gt>B<loadSchemas>(SCHEMA, VERSION)
@@ -161,10 +180,14 @@ See L<XML::Compile::WSS/"Internals">
 
 =back
 
+=head1 DETAILS
+
+See L<documentation in the base class|XML::Compile::WSS/"DETAILS">.
+ 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.07,
-built on November 17, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.09,
+built on October 11, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -179,20 +202,18 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-L<XML::Rewrite>,
-L<XML::eXistDB>,
+L<XML::Rewrite>
 and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile> .
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

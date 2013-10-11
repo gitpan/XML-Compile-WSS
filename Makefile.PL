@@ -1,22 +1,40 @@
 use ExtUtils::MakeMaker;
+use warnings;
+use strict;
 
-use 5.008;
+use 5.010;
+
+# Signatures MUST be upgraded when installed
+
+eval "require XML::Compile::WSS::Signature";
+my $version = $XML::Compile::WSS::Signature::VERSION;
+
+if(defined $version && $version lt '2.00')
+{   warn <<__WARN;
+*************
+    You have XML::Compile::WSS::Signature version $version installed,
+    but MUST upgrade it to at least version 2.00
+*************
+__WARN
+    sleep 15
+}
 
 WriteMakefile
  ( NAME	 	=> 'XML::Compile::WSS'
- , VERSION	=> '1.07'
+ , VERSION	=> '1.09'
 
  , PREREQ_PM    =>
-     { XML::Compile         => '1.29'
-     , XML::Compile::Cache  => '0.992'
-     , XML::Compile::SOAP   => '2.33'
-     , Log::Report          => '0.92'
+     { 'XML::Compile'         => '1.39'
+     , 'XML::Compile::Cache'  => '0.997'
+     , 'XML::Compile::SOAP'   => '2.38'
+     , 'Log::Report'          => '0.92'
 
-     , Encode               => 0
-     , Test::More           => 0.54
-     , File::Basename       => 0
-     , MIME::Base64         => 0
-     , Digest::SHA          => 0
+     , 'Encode'               => 0
+     , 'Test::More'           => 0.54
+     , 'File::Basename'       => 0
+     , 'MIME::Base64'         => 0
+     , 'Digest::SHA'          => 0
+     , 'Scalar::Util'         => 0
      }
  , EXE_FILES    => []
  , AUTHOR       => 'Mark Overmeer'

@@ -4,7 +4,8 @@ use strict;
 
 use Test::More tests => 3;
 
-use XML::Compile::WSDL11 ;
+use XML::Compile::SOAP11;
+use XML::Compile::WSDL11;
 use XML::Compile::SOAP::WSS ;
 use XML::Compile::WSS::Util qw/:wss11 :utp11/ ;
 

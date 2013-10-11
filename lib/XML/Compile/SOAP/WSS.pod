@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::SOAP::WSS - Web Service Security used in SOAP
@@ -29,7 +31,7 @@ XML::Compile::SOAP::WSS - Web Service Security used in SOAP
  my $call     = $wsdl->compileClient($opname);
  my ($answer, $trace) = $call->(wsse_Security => $auth, %data);
 
- my @features = ($auth);    # any selection of features
+ my @features = ($auth, ...);    # any selection of features
  my $answer   = $call->(wsse_Security => \@features, %data);
 
 =head1 DESCRIPTION
@@ -101,6 +103,18 @@ Put a crypto signature on one or more elements.
 See documentation in L<XML::Compile::WSS::Signature|XML::Compile::WSS::Signature>.  The OPTIONS are
 passed to its new() method.
 
+ -Option    --Default
+  sign_types  'SOAP-ENV:Body'
+
+=over 2
+
+=item sign_types => ARRAY
+
+[1.08] specify the types of elements which need to be signed.  If you
+have more elements of the same type, they will all get signed.
+
+=back
+
 =item $obj-E<gt>B<timestamp>(OPTIONS)
 
 Adds a timestamp record to the Security header.
@@ -111,8 +125,8 @@ passed to its new() method.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.07,
-built on November 17, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.09,
+built on October 11, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -127,20 +141,18 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-L<XML::Rewrite>,
-L<XML::eXistDB>,
+L<XML::Rewrite>
 and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile> .
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

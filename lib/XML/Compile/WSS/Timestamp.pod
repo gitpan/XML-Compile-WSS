@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::WSS::Timestamp - expiration
@@ -28,10 +30,16 @@ The generic Web Service Security protocol is implemented by the super
 class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements a timestamp
 record.
 
+See L<documentation in the base class|XML::Compile::WSS/"DESCRIPTION">.
+ 
 =head1 METHODS
 
+See L<documentation in the base class|XML::Compile::WSS/"METHODS">.
+ 
 =head2 Constructors
 
+See L<documentation in the base class|XML::Compile::WSS/"Constructors">.
+ 
 =over 4
 
 =item XML::Compile::WSS::Timestamp-E<gt>B<new>(OPTIONS)
@@ -40,6 +48,7 @@ record.
   created                         now
   expires                         undef
   lifetime                        undef
+  prepare      XML::Compile::WSS  'ALL'
   schema       XML::Compile::WSS  undef
   version      XML::Compile::WSS  undef
   wss_version  XML::Compile::WSS  '1.1'
@@ -64,6 +73,8 @@ When C<lifetime> is given and no C<expires>, then the expiration will
 be set to the C<created> time plus this lifetime.  In this case, the
 created time cannot be specified as formatted DATE.
 
+=item prepare => 'READER'|'WRITER'|'ALL'|'NONE'
+
 =item schema => an L<XML::Compile::Cache|XML::Compile::Cache> object
 
 =item version => STRING
@@ -80,6 +91,8 @@ Adds a C<wsu:Id> attribute to the C<wsse:Timestamp>.
 
 =head2 Attributes
 
+See L<documentation in the base class|XML::Compile::WSS/"Attributes">.
+ 
 =over 4
 
 =item $obj-E<gt>B<created>()
@@ -106,6 +119,8 @@ See L<XML::Compile::WSS/"Attributes">
 
 =head2 Apply
 
+See L<documentation in the base class|XML::Compile::WSS/"Apply">.
+ 
 =over 4
 
 =item $obj-E<gt>B<check>(SECURITY)
@@ -120,6 +135,8 @@ See L<XML::Compile::WSS/"Apply">
 
 =head2 Helpers
 
+See L<documentation in the base class|XML::Compile::WSS/"Helpers">.
+ 
 =over 4
 
 =item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
@@ -130,6 +147,8 @@ See L<XML::Compile::WSS/"Helpers">
 
 =head2 Internals
 
+See L<documentation in the base class|XML::Compile::WSS/"Internals">.
+ 
 =over 4
 
 =item $obj-E<gt>B<loadSchemas>(SCHEMA, VERSION)
@@ -144,10 +163,14 @@ See L<XML::Compile::WSS/"Internals">
 
 =back
 
+=head1 DETAILS
+
+See L<documentation in the base class|XML::Compile::WSS/"DETAILS">.
+ 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.07,
-built on November 17, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.09,
+built on October 11, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -162,20 +185,18 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-L<XML::Rewrite>,
-L<XML::eXistDB>,
+L<XML::Rewrite>
 and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile> .
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

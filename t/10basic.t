@@ -4,6 +4,7 @@ use strict;
 
 use Test::More tests => 7;
 
+use XML::Compile::SOAP11;
 use XML::Compile::WSDL11;
 use XML::Compile::WSS::BasicAuth  ();
 use XML::Compile::WSS::Util       qw/:wss11 :utp11/ ;

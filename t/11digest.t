@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
-#
 # Basically just ensure that examples/usertoken/with_help_digest.pl will work.
-#
+
 use warnings;
 use strict;
 

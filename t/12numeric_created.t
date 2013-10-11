@@ -16,6 +16,7 @@ use MIME::Base64  qw/encode_base64 decode_base64/;
 
 use Test::More tests => 24;
 
+use XML::Compile::SOAP11;
 use XML::Compile::WSDL11;
 use XML::Compile::WSS::Util qw/:utp11/;
 use XML::Compile::WSS::BasicAuth;

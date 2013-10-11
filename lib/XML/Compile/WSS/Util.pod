@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 XML::Compile::WSS::Util - constants for XML::Compile::WSS
@@ -26,7 +28,7 @@ when you use this list in combination with other applications.
 
   WSS_11   WSSE_10      DSIG_NS      DSIG11_NS    GHC_NS
   WSU_10   WSS11MODULE  DSIG_MORE_NS XENC_NS      DSP_NS
-  WSM_10   XTP_10
+  WSM_10   XTP_10	WSU_NS
 
 =head2 Export tag :xtp10
 
@@ -40,7 +42,24 @@ F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0
 Defines convenient constants in the soap-messages namespace.  See
 F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0.pdf >
 
-  WSM10_BASE64
+  WSM10_BASE64    WSM10_STR_TRANS
+
+=over 4
+
+=item B<wsm_decoded>(ENCODING, BYTES)
+
+Decode the sequence of BYTES from the given encoding.
+
+=item B<wsm_encoded>(ENCODING, BYTES)
+
+Encode the sequence of BYTES into the preferred.
+
+=back
+
+=head2 Export tag :wsm11
+
+[1.08] Defines convenient constants in the soap-messages namespace.  See
+F<http://docs.oasis-open.org/wss-m/wss/v1.1.1/os/wss-SOAPMessageSecurity-v1.1.1-os.html>
 
 =head2 Export tag C<:utp11>
 
@@ -105,9 +124,9 @@ specified in F<http://www.w3.org/TR/2002/REC-xmlenc-core-20021210/>
 
   XENC_NS         XENC_PROPS      XENC_AES128     XENC_DH
   XENC_MIME_TYPE  XENC_SHA256     XENC_AES192     XENC_DH_KV
-  XENC_ELEMENT    XENC_SHA512     XENC_AES156     XENC_KW_3DES
+  XENC_ELEMENT    XENC_SHA512     XENC_AES256     XENC_KW_3DES
   XENC_CONTENT    XENC_RIPEMD160  XENC_RSA_1_5    XENC_KW_AES128
-  XENC_KEY        XENC_3DES       XENC_RSA_AEOP   XENC_KW_AES192
+  XENC_KEY        XENC_3DES       XENC_RSA_OAEP   XENC_KW_AES192
   XENC_DSIG       XENC_KW_AES256
 
 =head2 Export tag :xghc
@@ -127,8 +146,8 @@ F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.07,
-built on November 17, 2012. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.09,
+built on October 11, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
@@ -143,20 +162,18 @@ L<XML::Compile::Tester>,
 L<XML::Compile::Cache>,
 L<XML::Compile::Dumper>,
 L<XML::Compile::RPC>,
-L<XML::Rewrite>,
-L<XML::eXistDB>,
+L<XML::Rewrite>
 and
 L<XML::LibXML::Simple>.
 
 Please post questions or ideas to the mailinglist at
-F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile>
-
+F<http://lists.scsys.co.uk/cgi-bin/mailman/listinfo/xml-compile> .
 For live contact with other developers, visit the C<#xml-compile> channel
 on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011-2012 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
