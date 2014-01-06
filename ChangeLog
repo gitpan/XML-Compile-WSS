@@ -1,6 +1,11 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.11: Mon Jan  6 10:39:31 CET 2014
+
+	Fixes:
+	- depends on XML::Compile::WSDL11 [cpantesters]
+
 version 1.10: Mon Jan  6 01:07:14 CET 2014
 
 	Improvements:

@@ -125,7 +125,7 @@ passed to its new() method.
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.10,
+This module is part of XML-Compile-WSS distribution version 1.11,
 built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:

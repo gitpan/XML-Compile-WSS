@@ -41,10 +41,11 @@
             "Test::More" : "0.54",
             "XML::Compile" : "1.39",
             "XML::Compile::Cache" : "1.00",
-            "XML::Compile::SOAP" : "2.38"
+            "XML::Compile::SOAP" : "3.00",
+            "XML::Compile::WSDL11" : "3.00"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "1.10"
+   "version" : "1.11"
 }
