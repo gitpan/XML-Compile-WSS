@@ -69,10 +69,16 @@ See L<documentation in the base class|XML::Compile::WSS/"Constructors">.
 
 See L<XML::Compile::WSS::dateTime()|XML::Compile::WSS/"Helpers"> for choices of DATETIME.
 
+[1.10] The caller of the operation may also pass a C<wsu_Created>
+parameter, with the same formatting power.
+
 =item nonce => STRING|CODE|'RANDOM'
 
 Only used then the password is passed as digest.  This will cause the
 C<wsse:Nonce> element.
+
+[1.10] You may add C<wsse_Nonce> to each operation call,
+to overrule the global setting.
 
 When you pass a CODE, it will get called for each message to produce a
 STRING. The constant text 'RANDOM' will have a random nonce generator
@@ -186,12 +192,13 @@ See L<documentation in the base class|XML::Compile::WSS/"DETAILS">.
  
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.09,
-built on October 11, 2013. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.10,
+built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
 L<XML::Compile::SOAP>,
+L<XML::Compile::WSDL11>,
 L<XML::Compile::SOAP12>,
 L<XML::Compile::SOAP::Daemon>,
 L<XML::Compile::SOAP::WSA>,
@@ -213,7 +220,7 @@ on C<irc.perl.org>.
 
 =head1 LICENSE
 
-Copyrights 2011-2013 by [Mark Overmeer]. For other contributors see ChangeLog.
+Copyrights 2011-2014 by [Mark Overmeer]. For other contributors see ChangeLog.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

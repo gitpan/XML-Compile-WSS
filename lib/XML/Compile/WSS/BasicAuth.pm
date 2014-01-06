@@ -1,4 +1,4 @@
-# Copyrights 2011-2013 by [Mark Overmeer].
+# Copyrights 2011-2014 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.01.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS::BasicAuth;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 use base 'XML::Compile::WSS';
 
@@ -29,8 +29,11 @@ sub init($)
     $args->{wss_version} ||= '1.1';
     $self->SUPER::init($args);
 
-    $self->{XCWB_username} = $args->{username} or panic;
-    $self->{XCWB_password} = $args->{password} or panic;
+    $self->{XCWB_username} = $args->{username}
+        or error __"no username provided for basic authentication";
+
+    $self->{XCWB_password} = $args->{password}
+        or error __x"no password provided for basic authentication";
 
     my $n     = defined $args->{nonce} ? $args->{nonce} : 'RANDOM';
     my $nonce = ref $n eq 'CODE' ? $n
@@ -96,10 +99,11 @@ sub prepareWriting($)
           , wsse_Username => $self->username
           );
 
-        my $created  = $self->dateTime($self->created) || '';
+        my $now      = delete $data->{wsu_Created} || $self->created;
+        my $created  = $self->dateTime($now) || '';
         $login{$created_type} = $make_created->($doc, $created) if $created;
 
-        my $nonce    = $self->nonce || '';
+        my $nonce    = delete $data->{wsse_Nonce}  || $self->nonce || '';
         $login{$nonce_type} = $make_nonce->($doc, $nonce)
             if length $nonce;
 

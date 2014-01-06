@@ -26,6 +26,6 @@ requires:
   Scalar::Util: 0
   Test::More: 0.54
   XML::Compile: 1.39
-  XML::Compile::Cache: 0.997
+  XML::Compile::Cache: 1.00
   XML::Compile::SOAP: 2.38
-version: 1.09
+version: 1.10

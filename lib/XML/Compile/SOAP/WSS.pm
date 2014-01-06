@@ -1,4 +1,4 @@
-# Copyrights 2011-2013 by [Mark Overmeer].
+# Copyrights 2011-2014 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.01.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::SOAP::WSS;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 use base 'XML::Compile::SOAP::Extension';
 
@@ -58,6 +58,7 @@ before the WSDL because it influences its interpretation";
     $op->addHeader(INPUT  => "wsse_Security" => $sec, mustUnderstand => 1);
     $op->addHeader(OUTPUT => "wsse_Security" => $sec, mustUnderstand => 1);
 }
+*soap12OperationInit = \&soap11OperationInit;
 
 sub soap11ClientWrapper($$$)
 {   my ($self, $op, $call, $args) = @_;
@@ -89,6 +90,7 @@ sub soap11ClientWrapper($$$)
         wantarray ? ($answer, $trace) : $answer;
     };
 }
+*soap12ClientWrapper = \&soap11ClientWrapper;
 
 #---------------------------
 
@@ -132,14 +134,13 @@ sub timestamp(%)
 }
 
 
-
 sub signature(%)
 {   my ($self, %args) = @_;
     my $schema = $args{schema} || $self->schema;
 
-    $args{sign_types} ||= 'SOAP-ENV:Body';
+    $args{sign_types} ||= ['SOAP-ENV:Body', 'env12:Body'];
     $args{sign_put}   ||= 'wsse:SecurityHeaderType';
-    $args{sign_when}  ||= 'SOAP-ENV:Envelope';
+    $args{sign_when}  ||= ['SOAP-ENV:Envelope', 'env12:Envelope'];
 
     my $sig    = $self->_start('XML::Compile::WSS::Signature', \%args);
     $sig;

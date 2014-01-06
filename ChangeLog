@@ -1,11 +1,20 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.10: Mon Jan  6 01:07:14 CET 2014
+
+	Improvements:
+	- add ::BasicAuth ability to change wsu_Created and wsse_Nonce
+	  per operation. [Alex Rutgers]
+	- add SOAP 1.2 support
+
 version 1.09: Fri Oct 11 15:52:31 CEST 2013
+
 	Fixes:
 	- Accept SOAP-call which passed data as HASH.
 
 version 1.08_02: Sun Sep 22 22:47:26 CEST 2013
+
 	Changes:
 	- Move logic from ::SOAP::WSS into ::WSS::Signature
 

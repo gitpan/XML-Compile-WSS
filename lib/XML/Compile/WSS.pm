@@ -1,4 +1,4 @@
-# Copyrights 2011-2013 by [Mark Overmeer].
+# Copyrights 2011-2014 by [Mark Overmeer].
 #  For other contributors see ChangeLog.
 # See the manual pages for details on the licensing terms.
 # Pod stripped from pm file by OODoc 2.01.
@@ -7,7 +7,7 @@ use strict;
 
 package XML::Compile::WSS;
 use vars '$VERSION';
-$VERSION = '1.09';
+$VERSION = '1.10';
 
 
 use Log::Report 'xml-compile-wss';
