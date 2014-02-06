@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package XML::Compile::SOAP::WSS;
-use vars '$VERSION';
-$VERSION = '1.11';
+our $VERSION = '1.12';
 
 use base 'XML::Compile::SOAP::Extension';
 
@@ -138,9 +137,10 @@ sub signature(%)
 {   my ($self, %args) = @_;
     my $schema = $args{schema} || $self->schema;
 
-    $args{sign_types} ||= ['SOAP-ENV:Body', 'env12:Body'];
+    my $has12  = defined $schema->prefix('env12');
+    $args{sign_types} ||= ['SOAP-ENV:Body', ($has12 ? 'env12:Body' : ())];
     $args{sign_put}   ||= 'wsse:SecurityHeaderType';
-    $args{sign_when}  ||= ['SOAP-ENV:Envelope', 'env12:Envelope'];
+    $args{sign_when}  ||= ['SOAP-ENV:Envelope', ($has12 ? 'env12:Envelope':())];
 
     my $sig    = $self->_start('XML::Compile::WSS::Signature', \%args);
     $sig;

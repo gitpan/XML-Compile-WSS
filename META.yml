@@ -29,4 +29,4 @@ requires:
   XML::Compile::Cache: 1.00
   XML::Compile::SOAP: 3.00
   XML::Compile::WSDL11: 3.00
-version: 1.11
+version: 1.12

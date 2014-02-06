@@ -6,8 +6,7 @@ use warnings;
 use strict;
 
 package XML::Compile::WSS;
-use vars '$VERSION';
-$VERSION = '1.11';
+our $VERSION = '1.12';
 
 
 use Log::Report 'xml-compile-wss';

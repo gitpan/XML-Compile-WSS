@@ -53,7 +53,7 @@ security features can only be created after that.
 
 =over 4
 
-=item XML::Compile::SOAP::WSS-E<gt>B<new>(OPTIONS)
+=item XML::Compile::SOAP::WSS-E<gt>B<new>(%options)
 
  -Option--Default
   schema  undef
@@ -72,7 +72,7 @@ Do not use this in combination with a WSDL, but always in any other case.
 
 =over 4
 
-=item $obj-E<gt>B<addFeature>(WSSOBJ)
+=item $obj-E<gt>B<addFeature>($wssobj)
 
 Add a new L<XML::Compile::WSS|XML::Compile::WSS> object to the list of maintained features.
 
@@ -91,16 +91,16 @@ header.
 
 =over 4
 
-=item $obj-E<gt>B<basicAuth>(OPTIONS)
+=item $obj-E<gt>B<basicAuth>(%options)
 
 Implements username/password authentication.
-See documentation in L<XML::Compile::WSS::BasicAuth|XML::Compile::WSS::BasicAuth>.  The OPTIONS are
+See documentation in L<XML::Compile::WSS::BasicAuth|XML::Compile::WSS::BasicAuth>.  The %options are
 passed to its new() method.
 
-=item $obj-E<gt>B<signature>(OPTIONS)
+=item $obj-E<gt>B<signature>(%options)
 
 Put a crypto signature on one or more elements.
-See documentation in L<XML::Compile::WSS::Signature|XML::Compile::WSS::Signature>.  The OPTIONS are
+See documentation in L<XML::Compile::WSS::Signature|XML::Compile::WSS::Signature>.  The %options are
 passed to its new() method.
 
  -Option    --Default
@@ -115,18 +115,18 @@ have more elements of the same type, they will all get signed.
 
 =back
 
-=item $obj-E<gt>B<timestamp>(OPTIONS)
+=item $obj-E<gt>B<timestamp>(%options)
 
 Adds a timestamp record to the Security header.
-See documentation in L<XML::Compile::WSS::Timestamp|XML::Compile::WSS::Timestamp>.  The OPTIONS are
+See documentation in L<XML::Compile::WSS::Timestamp|XML::Compile::WSS::Timestamp>.  The %options are
 passed to its new() method.
 
 =back
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.11,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.12,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

@@ -1,6 +1,15 @@
 
 ==== version history of XML::Compile:WSS
 
+version 1.12: Thu Feb  6 17:12:02 CET 2014
+
+	Fixes:
+	- ::SOAP12 is optional, as is the availability of the env12
+	  prefix definition. [cpantesters]
+
+	Improvements:
+	- change documentation style.
+
 version 1.11: Mon Jan  6 10:39:31 CET 2014
 
 	Fixes:

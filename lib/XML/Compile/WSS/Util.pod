@@ -46,13 +46,13 @@ F<http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-
 
 =over 4
 
-=item B<wsm_decoded>(ENCODING, BYTES)
+=item B<wsm_decoded>($encoding, $bytes)
 
-Decode the sequence of BYTES from the given encoding.
+Decode the sequence of $bytes from the given encoding.
 
-=item B<wsm_encoded>(ENCODING, BYTES)
+=item B<wsm_encoded>($encoding, $bytes)
 
-Encode the sequence of BYTES into the preferred.
+Encode the sequence of $bytes into the preferred.
 
 =back
 
@@ -146,8 +146,8 @@ F<http://www.w3.org/TR/2011/CR-xmldsig-properties-20110303/>
 
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.11,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.12,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,

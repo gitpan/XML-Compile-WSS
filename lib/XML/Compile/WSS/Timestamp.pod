@@ -30,19 +30,19 @@ The generic Web Service Security protocol is implemented by the super
 class L<XML::Compile::WSS|XML::Compile::WSS>.  This extension implements a timestamp
 record.
 
-See L<documentation in the base class|XML::Compile::WSS/"DESCRIPTION">.
+Extends L<"DESCRIPTION" in XML::Compile::WSS|XML::Compile::WSS/"DESCRIPTION">.
  
 =head1 METHODS
 
-See L<documentation in the base class|XML::Compile::WSS/"METHODS">.
+Extends L<"METHODS" in XML::Compile::WSS|XML::Compile::WSS/"METHODS">.
  
 =head2 Constructors
 
-See L<documentation in the base class|XML::Compile::WSS/"Constructors">.
+Extends L<"Constructors" in XML::Compile::WSS|XML::Compile::WSS/"Constructors">.
  
 =over 4
 
-=item XML::Compile::WSS::Timestamp-E<gt>B<new>(OPTIONS)
+=item XML::Compile::WSS::Timestamp-E<gt>B<new>(%options)
 
  -Option     --Defined in       --Default
   created                         now
@@ -91,7 +91,7 @@ Adds a C<wsu:Id> attribute to the C<wsse:Timestamp>.
 
 =head2 Attributes
 
-See L<documentation in the base class|XML::Compile::WSS/"Attributes">.
+Extends L<"Attributes" in XML::Compile::WSS|XML::Compile::WSS/"Attributes">.
  
 =over 4
 
@@ -103,7 +103,7 @@ See L<documentation in the base class|XML::Compile::WSS/"Attributes">.
 
 =item $obj-E<gt>B<schema>()
 
-See L<XML::Compile::WSS/"Attributes">
+Inherited, see L<XML::Compile::WSS/"Attributes">
 
 =item $obj-E<gt>B<timestamps>()
 
@@ -111,7 +111,7 @@ Returns the "created" and "expires" timestamps.  Both may be undef.
 
 =item $obj-E<gt>B<wssVersion>()
 
-See L<XML::Compile::WSS/"Attributes">
+Inherited, see L<XML::Compile::WSS/"Attributes">
 
 =item $obj-E<gt>B<wsuId>()
 
@@ -119,58 +119,58 @@ See L<XML::Compile::WSS/"Attributes">
 
 =head2 Apply
 
-See L<documentation in the base class|XML::Compile::WSS/"Apply">.
+Extends L<"Apply" in XML::Compile::WSS|XML::Compile::WSS/"Apply">.
  
 =over 4
 
-=item $obj-E<gt>B<check>(SECURITY)
+=item $obj-E<gt>B<check>($security)
 
-See L<XML::Compile::WSS/"Apply">
+Inherited, see L<XML::Compile::WSS/"Apply">
 
-=item $obj-E<gt>B<create>(DOC, SECURITY, DATA)
+=item $obj-E<gt>B<create>($doc, $security, $data)
 
-See L<XML::Compile::WSS/"Apply">
+Inherited, see L<XML::Compile::WSS/"Apply">
 
 =back
 
 =head2 Helpers
 
-See L<documentation in the base class|XML::Compile::WSS/"Helpers">.
+Extends L<"Helpers" in XML::Compile::WSS|XML::Compile::WSS/"Helpers">.
  
 =over 4
 
-=item $obj-E<gt>B<dateTime>(TIME|STRING|HASH)
+=item $obj-E<gt>B<dateTime>($time|$string|HASH)
 
-See L<XML::Compile::WSS/"Helpers">
+Inherited, see L<XML::Compile::WSS/"Helpers">
 
 =back
 
 =head2 Internals
 
-See L<documentation in the base class|XML::Compile::WSS/"Internals">.
+Extends L<"Internals" in XML::Compile::WSS|XML::Compile::WSS/"Internals">.
  
 =over 4
 
-=item $obj-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+=item $obj-E<gt>B<loadSchemas>($schema, $version)
 
-=item XML::Compile::WSS::Timestamp-E<gt>B<loadSchemas>(SCHEMA, VERSION)
+=item XML::Compile::WSS::Timestamp-E<gt>B<loadSchemas>($schema, $version)
 
-See L<XML::Compile::WSS/"Internals">
+Inherited, see L<XML::Compile::WSS/"Internals">
 
-=item $obj-E<gt>B<writerHookWsuId>(TYPE)
+=item $obj-E<gt>B<writerHookWsuId>($type)
 
-See L<XML::Compile::WSS/"Internals">
+Inherited, see L<XML::Compile::WSS/"Internals">
 
 =back
 
 =head1 DETAILS
 
-See L<documentation in the base class|XML::Compile::WSS/"DETAILS">.
+Extends L<"DETAILS" in XML::Compile::WSS|XML::Compile::WSS/"DETAILS">.
  
 =head1 SEE ALSO
 
-This module is part of XML-Compile-WSS distribution version 1.11,
-built on January 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
+This module is part of XML-Compile-WSS distribution version 1.12,
+built on February 06, 2014. Website: F<http://perl.overmeer.net/xml-compile/>
 
 Other distributions in this suite:
 L<XML::Compile>,
